@@ -64,15 +64,8 @@
        (scroll-bar-mode 0)
        (tool-bar-mode 0)
        (tooltip-mode 0))
-     (when window-system (minimal-gui))
+     (when window-system (minimal-gui)) ;; when calling emacs directly (not emacsclient)
      (add-hook 'after-make-frame-functions (lambda (_) (minimal-gui))) ;; _ arg is frame passed from hook
-
-     (when window-system
-       (menu-bar-mode 0)
-       (blink-cursor-mode 0)
-       (scroll-bar-mode 0)
-       (tool-bar-mode 0)
-       (tooltip-mode 0))
 
    #+END_SRC
 ** Alias y/n
@@ -159,8 +152,4 @@
     (global-set-key (kbd "C-,") #'previous-buffer)
     (global-set-key (kbd "C-;") #'delete-other-windows)
 
-  #+END_SRC
-* Server
-  #+BEGIN_SRC emacs-lisp
-    (server-start)
   #+END_SRC

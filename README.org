@@ -1,4 +1,5 @@
-* emacs client
+* emacs daemon/client scripts
 
-  ec/et emacs client scripts from:
-  https://github.com/mjwall/dotfiles/blob/master/bin/et
+  ec/et/es emacs client scripts from:
+  http://mjwall.com/blog/2013/10/04/how-i-use-emacs/
+  https://github.com/mjwall/dotfiles/blob/master/bin/
