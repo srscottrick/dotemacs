@@ -1,4 +1,4 @@
-#+PROPERTY: header-args :tangle yes
+#+PROPERTY: header-args :tangle /tmp/dotemacs.el
 * Constants
 ** Backups Constants
    #+BEGIN_SRC emacs-lisp
