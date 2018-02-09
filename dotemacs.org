@@ -22,6 +22,14 @@
    #+BEGIN_SRC emacs-lisp
      (defconst dotemacs--bookmark-default-file (expand-file-name ".emacs-bookmarks.el" "~"))
    #+END_SRC
+** Default Theme
+   #+BEGIN_SRC emacs-lisp
+     (defconst dotemacs--default-theme 'tango-dark)
+   #+END_SRC
+* Theme
+  #+BEGIN_SRC emacs-lisp
+    (load-theme dotemacs--default-theme)
+  #+END_SRC
 * Emacs UI
 ** Start up
    #+BEGIN_SRC emacs-lisp
@@ -129,7 +137,7 @@
   #+END_SRC
 * Bookmarks
   #+BEGIN_SRC emacs-lisp
-    (setq-default bookmark-default-file dotemacs--bookmark-default-file)
+    (setq bookmark-default-file dotemacs--bookmark-default-file)
   #+END_SRC
 * Packages
   #+BEGIN_SRC emacs-lisp
