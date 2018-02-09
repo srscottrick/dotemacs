@@ -1,0 +1,149 @@
+#+PROPERTY: header-args :tangle yes
+* Constants
+** Backups Constants
+   #+BEGIN_SRC emacs-lisp
+     (defconst dotemacs--enable-backups 'yes)
+     (defconst dotemacs--backups-directory (expand-file-name "backups" user-emacs-directory))
+
+   #+END_SRC
+** Autosave Constants
+   #+BEGIN_SRC emacs-lisp
+     (defconst dotemacs--auto-save-enabled 'yes)
+     (defconst dotemacs--auto-save-list-file-prefix (expand-file-name "autosaves/autosave-" user-emacs-directory))
+     (defconst dotemacs--auto-save-transforms "autosaves")
+
+   #+END_SRC
+** Custom File Constants
+   #+BEGIN_SRC emacs-lisp
+     (defconst dotemacs--custom-file (expand-file-name ".emacs-custom.el" "~"))
+
+   #+END_SRC
+** Bookmarks Constants
+   #+BEGIN_SRC emacs-lisp
+     (defconst dotemacs--bookmark-default-file (expand-file-name ".emacs-bookmarks.el" "~"))
+   #+END_SRC
+* Emacs UI
+** Start up
+   #+BEGIN_SRC emacs-lisp
+     (setq-default
+      initial-scratch-message nil
+      inhibit-splash-screen t)
+
+   #+END_SRC
+** Bell
+   #+BEGIN_SRC emacs-lisp
+     (setq-default
+      visible-bell t
+      ring-bell-function #'ignore)
+
+   #+END_SRC
+** Confirm on exit
+   #+BEGIN_SRC emacs-lisp
+     (setq-default
+      confirm-kill-emacs 'yes-or-no-p)
+
+   #+END_SRC
+** Use Trash
+   #+BEGIN_SRC emacs-lisp
+     (setq-default
+      delete-by-moving-to-trash 1)
+   #+END_SRC
+** GUI Setup
+   #+BEGIN_SRC emacs-lisp
+     (when window-system
+       (menu-bar-mode 0)
+       (blink-cursor-mode 0)
+       (scroll-bar-mode 0)
+       (tool-bar-mode 0)
+       (tooltip-mode 0))
+
+   #+END_SRC
+** Alias y/n
+   #+BEGIN_SRC emacs-lisp
+     (defalias 'yes-or-no-p 'y-or-n-p)
+   #+END_SRC
+** Global UI Minor Modes
+   #+BEGIN_SRC emacs-lisp
+     (show-paren-mode t)
+     (global-prettify-symbols-mode 1)
+
+   #+END_SRC
+* Backups and autosaves
+** Backups
+   #+BEGIN_SRC emacs-lisp
+     (if dotemacs--enable-backups
+	 (setq-default
+	  backup-by-copying t
+	  version-control t
+	  kept-new-versions 5
+	  kept-old-versions 5
+	  delete-old-versions t
+	  backup-directory-alist `(("." . ,dotemacs--backups-directory)))
+       (setq-default
+	make-backup-files nil))
+
+   #+END_SRC
+** Autosaves
+   #+BEGIN_SRC emacs-lisp
+     (if dotemacs--auto-save-enabled
+	 (setq-default
+	  auto-save-list-file-prefix dotemacs--auto-save-list-file-prefix
+	  auto-save-file-name-transforms `((".*" ,dotemacs--auto-save-transforms t))
+	  auto-save-interval 100)
+       (setq-default
+	(setq-default auto-save-default nil)))
+
+   #+END_SRC
+* Dired
+  #+BEGIN_SRC emacs-lisp
+    (add-hook 'dired-load-hook (function (lambda () (load "dired-x"))))
+
+    (defcustom list-of-dired-switches
+      '(("-l" . "classic")
+	("-la" . "all")
+	("-lA" . "no . & ..")
+	("-lA --group-directories-first" . "directories first"))
+      "List of ls switches (together with a name to display in the mode-line) for dired to cycle among.")
+
+    (defun dotemacs--cycle-dired-switches ()
+      "Cycle through the list `list-of-dired-switches' of switches for ls"
+      (interactive)
+      (setq list-of-dired-switches
+	    (append (cdr list-of-dired-switches)
+		    (list (car list-of-dired-switches))))
+      (dired-sort-other (caar list-of-dired-switches))
+      (setq mode-name (concat "Dired " (cdar list-of-dired-switches)))
+      (force-mode-line-update))
+
+    (defun dotemacs--dired-mode-hook ()
+      (local-set-key (kbd "z") #'dotemacs--cycle-dired-switches))
+    (add-hook 'dired-mode-hook 'dotemacs--dired-mode-hook)
+
+
+  #+END_SRC
+* Custom File
+  #+BEGIN_SRC emacs-lisp
+    (setq custom-file dotemacs--custom-file)
+    (load custom-file 'noerror)
+
+  #+END_SRC
+* Bookmarks
+  #+BEGIN_SRC emacs-lisp
+    (setq-default bookmark-default-file dotemacs--bookmark-default-file)
+  #+END_SRC
+* Packages
+  #+BEGIN_SRC emacs-lisp
+    (package-initialize)
+  #+END_SRC
+* Global Keybindings
+  #+BEGIN_SRC emacs-lisp
+    (global-set-key (kbd "C-x C-b") #'ibuffer)
+    (global-set-key (kbd "C-.") #'next-buffer)
+    (global-set-key (kbd "C-,") #'previous-buffer)
+    (global-set-key (kbd "C-;") #'delete-other-windows)
+
+  #+END_SRC
+* Server
+  #+BEGIN_SRC emacs-lisp
+    (server-start)
+  #+END_SRC
