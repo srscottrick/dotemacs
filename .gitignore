@@ -1,2 +1,15 @@
 # Ignore the generated dotemacs.el file
 dotemacs.el
+
+# Compiled
+*.elc
+
+# Packaging
+.cask
+
+# Backup files
+*~
+
+# Undo-tree save-files
+*.~undo-tree
+
