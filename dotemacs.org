@@ -1,4 +1,4 @@
-#+PROPERTY: header-args :tangle /tmp/dotemacs.el
+#+PROPERTY: header-args :tangle yes
 * Constants
 ** Backups Constants
    #+BEGIN_SRC emacs-lisp
@@ -13,6 +13,11 @@
      (defconst dotemacs--auto-save-transforms "autosaves")
 
    #+END_SRC
+** Abbrev Constants
+   #+BEGIN_SRC emacs-lisp
+     (defconst dotemacs--abbrev-file-name (expand-file-name "abbrev_defs" user-emacs-directory))
+
+   #+END_SRC
 ** Custom File Constants
    #+BEGIN_SRC emacs-lisp
      (defconst dotemacs--custom-file (expand-file-name ".emacs-custom.el" "~"))
@@ -25,6 +30,11 @@
 ** Default Theme
    #+BEGIN_SRC emacs-lisp
      (defconst dotemacs--default-theme 'tango-dark)
+   #+END_SRC
+** IDO Constants
+   #+BEGIN_SRC emacs-lisp
+     (defconst dotemacs--ido-last (expand-file-name "ido.last" user-emacs-directory))
+
    #+END_SRC
 * Theme
   #+BEGIN_SRC emacs-lisp
@@ -131,25 +141,346 @@
 
 
   #+END_SRC
-* Custom File
+* IDO
   #+BEGIN_SRC emacs-lisp
-    (setq custom-file dotemacs--custom-file)
-    (load custom-file 'noerror)
+    (setq ido-save-directory-list-file dotemacs--ido-last)
+    ;;https://news.ycombinator.com/item?id=14879375
+    (setq ido-enable-flex-matching t)
+    (setq ido-everywhere t)
+    (setq ido-create-new-buffer 'always)
+    (progn
+      ;; ignoring
+      ;; https://emacs.stackexchange.com/questions/5491/setting-ido-ignore-buffers-doesnt-cause-buffers-to-be-ignored-wheres-the-er
+
+      ;; C-a in ido minibuffer to toggle ido showing hidden buffers, 
+
+      ;; to use a var instead of a custom:
+      ;;(defvar ido-dont-ignore-buffer-names '("*grep*" "*Messages*"))
+
+      (defcustom ido-dont-ignore-buffer-names
+        '(("*grep*" . "grep")
+          ("*Messages*" . "Messages"))
+        "List of buffers that ido shouldn't ignore")
+
+      (defun ido-ignore-most-star-buffers (name)
+        (and
+         (string-match-p "^*" name)
+         (not (member name ido-dont-ignore-buffer-names))))
+
+      (setq ido-ignore-buffers (list "\\` " #'ido-ignore-most-star-buffers)))
+
+    (ido-mode 1)
+
+
+  #+END_SRC
+* iBuffer
+  #+BEGIN_SRC emacs-lisp
+    (setq ibuffer-expert t)
+    (setq ibuffer-show-empty-filter-groups nil)
+    (setq ibuffer-saved-filter-groups
+          '(("home"
+             ("emacs-config" (or
+                              (filename . ".emacs.d")
+                              (filename . ".emacs")
+                              (filename . ".emacs-custom.el")))
+             ("org-files" (or
+                           (used-mode . org-agenda-mode)
+                           (used-mode . org-mode)))
+             ("star-files" (name . "^*"))
+             )))
+
+    (setq ibuffer-saved-filters
+          '(("hider"
+             ((not name . "^*")
+              (not used-mode . org-mode)))
+            ))
+
+
+  #+END_SRC
+* Helper Functions
+  #+BEGIN_SRC emacs-lisp
+    (defun dotemacs--full-scratch ()
+      (interactive)
+      (switch-to-buffer "*scratch*")
+      (delete-other-windows))
+
+    (defun dotemacs-fix-html2 ()
+      "Keep this!!!"
+      (interactive)
+      (goto-char (point-min))
+      (while (re-search-forward "</\\(\[^>]+\\)>" nil :noerror) (replace-match (concat (match-string 0) "\n"))))
+
+    (defun dotemacs-fix-html ()
+      (interactive)
+      (goto-char (point-min))
+      (while (re-search-forward "><" nil :noerror) (replace-match ">\n<"))
+      (indent-region (point-min)(point-max)))
+
+    (defun dotemacs-fix-edn ()
+      (interactive)
+      (goto-char (point-min))
+      (while (re-search-forward "} {" nil :noerror) (replace-match "}\n{"))
+      (indent-region (point-min)(point-max)))
+
+    (defun dotemacs-spit (filename content)
+      (with-temp-file filename (insert content)))
+
+    (defun dotemacs-slurp (filename)
+      (with-temp-buffer (insert-file-contents filename) (buffer-string)))
+
+    (defun dotemacs-markdown-to-html (filename)
+      (shell-command-to-string (concat "Markdown.pl " filename)))
+
+    (defun dotemacs-test-buffer-interactive-input (buf-input)
+      (interactive "bSelect a buffer:")
+      (message "You selected buffer: %s. You probably wanted C-c K" buf-input))
+
+    (defun dotemacs--kill-open-buffers-except-those-start-with-space-and-messages ()
+      (interactive)
+      (defun dotemacs--kill-buffer (buffer-name)
+	(let ((dotemacs--buffer (get-buffer buffer-name)))
+	  (if (buffer-modified-p dotemacs--buffer)
+	      (if (y-or-n-p (format "%s is modified, kill anyway?" dotemacs--buffer))
+		  (kill-buffer dotemacs--buffer))
+	    (kill-buffer dotemacs--buffer))))
+
+      (if (y-or-n-p "Really kill open buffers except *Messages* and those that start with space, prompting for each if modified?")
+	  (mapc (lambda (b) (unless (equal " " (substring (buffer-name b) 0 1))
+			 (dotemacs--kill-buffer b)))
+		(delq (get-buffer "*Messages*") (buffer-list)))))
+
+    (defun dotemacs-empty-directory (dir)
+      "empty directory without deleting directory itself"
+      (if dir (mapcar (lambda (f) (delete-file f :TRASH))
+		      (file-expand-wildcards (expand-file-name "*" dir)))))
+
+    (defun dotemacs-empty-directory (dir)
+      "empty directory recursively without deleting directory itself"
+      (if dir (mapcar
+	       (lambda (f)
+		 (if (file-directory-p f)
+		     (delete-directory f :recursive :trash)
+		   (delete-file f :trash)))
+	       (file-expand-wildcards (expand-file-name "*" dir)))))
+
+    (defun dotemacs-deploy-file (source target-directory)
+      "Copies source file to target directory, creating parent directories and overwriting"
+      (unless (file-exists-p target-directory)
+	(make-directory target-directory))
+      (copy-file source target-directory :ok-if-exists))
+
+    (defun dotemacs-display-results (contents &optional mode)
+      (interactive)
+      (let ((results-buffer-name "*RESULTS*"))
+	(switch-to-buffer results-buffer-name)
+	(setq inhibit-read-only :yes)
+	(delete-region (point-min) (point-max))
+	(insert contents)
+	(if mode (funcall mode))
+	(indent-region (point-min) (point-max))
+	(goto-char (point-min))
+	(special-mode)
+	(delete-other-windows)))
+
+    (defun dotemacs-display-results-html (contents)
+      (interactive)
+      (let ((results-buffer-name "*RESULTS*"))
+	(switch-to-buffer results-buffer-name)
+	(setq inhibit-read-only :yes)
+	(delete-region (point-min) (point-max))
+	(insert contents)
+	(funcall 'html-mode)
+	(dotemacs-fix-html)
+	(indent-region (point-min) (point-max))
+	(goto-char (point-min))
+	(view-mode)
+	(delete-other-windows)))
 
   #+END_SRC
 * Bookmarks
   #+BEGIN_SRC emacs-lisp
     (setq bookmark-default-file dotemacs--bookmark-default-file)
   #+END_SRC
+* Skeletons
+*** Emacs
+    #+BEGIN_SRC emacs-lisp
+      (define-skeleton skl-elisp-function-interactive
+	  "ECMAScript function"
+	"Make an Emacs Lisp interactive function:"
+	> "(defun " (skeleton-read "Function name: ") " (" (skeleton-read "Parameters: ") ")" " \n"
+	> "(interactive)" "\n"
+	> _ "\n"
+	> ")\n")
+
+      (define-skeleton skl-elisp-mapc
+	  "Emacs List mapc"
+	"Make an Emacs Lisp mapc construct"
+	> "(mapc"
+	> " (lambda (" (skeleton-read "Parameter:") ") "
+	> _ ")"
+	> " " (skeleton-read "List: ") ")"
+	)
+      #+END_SRC
+*** Javascript
+    #+BEGIN_SRC emacs-lisp
+      (define-skeleton skl-js-function
+	  "ECMAScript function"
+	"Make a javascript function:"
+	> "function " (skeleton-read "Function name: ") "(" (skeleton-read "Parameters: ") ")" " {\n"
+	> _ "\n"
+	"}\n")
+
+      (define-skeleton skl-js-function-fatarrow
+	  "ECMAScript Fat Arrow Function"
+	"Make a javascript fat arrow function:"
+	> "(" (skeleton-read "Parameters: ") ")" " => " "{" "\n"
+	> _ "\n"
+	"}\n")
+
+      (define-skeleton skl-js-for
+	  "ECMAScript for loop"
+	"Make a javascript for loop:"
+	> "for(let i = 0; " "i < " (skeleton-read "Array to loop: ") ".length; " "i++) " "{\n"
+	> _ "\n"
+	"}\n")
+
+      (define-skeleton skl-js-package
+	  "Javascript package file"
+	"Make a javascript package file"
+	> "const " (skeleton-read "Package name:") " = (function() {" "\n"
+	> "\"use strict\";" "\n"
+	> "return {" "\n"
+	> _ "\n"
+	"  };" "\n"
+	"})();" "\n")
+
+      (define-skeleton skl-js-package-function
+	  "Javascript function in package style"
+	"Make a javascript package function"
+	> (skeleton-read "Function name: ") ": function(" (skeleton-read "Parameters: ") ") {" "\n"
+	> _ "\n"
+	"    }," "\n")
+
+      (define-skeleton skl-js-consolelog
+	  "ECMAScript console.log();"
+	"Write log function:"
+	> "console.log(" _ ");" "\n")
+    #+END_SRC
+*** HTML
+    #+BEGIN_SRC emacs-lisp
+      (define-skeleton skl-html-dev
+	  "HTML5 App Template"
+	"<!DOCTYPE html>"
+	"<html>" "\n"
+	"    <head>" "\n"
+	"	<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">" "\n"
+	"	<link rel=\"stylesheet\" href=\"https://unpkg.com/purecss@1.0.0/build/pure-min.css\">" "\n"
+	"    </head>" "\n"
+	"    <body>" "\n"
+	"	<div id=\"app\"></div>" "\n"
+	"	<script src=\"app.js\"></script>" "\n"
+	"	<script>" "\n"
+	"	 window.onload = function() {" "\n"
+	"	 }" "\n"
+	"	</script>" "\n"
+	"    </body>" "\n"
+	"</html>" "\n")
+
+      (define-skeleton skl-html-script-tag
+	  "HTML5 Script Tag Template"
+	> "     <script src=\"" (skeleton-read "Javascript File Name: ") ".js\"></script>")
+
+      (define-skeleton skl-html-css-include
+	  "HTML5 Include CSS File Template"
+	> "	<link href=\"" (skeleton-read "CSS File Name: ") ".css\" rel=\"stylesheet\" type=\"text/css\">")
+    #+END_SRC
+* Abbrev
+** Abbrev initialization
+   #+BEGIN_SRC emacs-lisp
+     (setq abbrev-file-name dotemacs--abbrev-file-name)
+     (setq-default abbrev-mode t)
+     (if (file-exists-p abbrev-file-name)
+         (quietly-read-abbrev-file))
+     ;;(setq default-abbrev-mode t)
+     (customize-set-variable 'save-abbrevs 'silently)
+   #+END_SRC
+
+** Abbrev Definitions for modes
+    #+BEGIN_SRC emacs-lisp
+      (unless (boundp 'js-mode-abbrev-table) (define-abbrev-table 'js-mode-abbrev-table '()))
+      (define-abbrev js-mode-abbrev-table "jff" "" #'skl-js-function)
+      (define-abbrev js-mode-abbrev-table "jfa" "" #'skl-js-function-fatarrow)
+      (define-abbrev js-mode-abbrev-table "jfo" "" #'skl-js-for)
+      (define-abbrev js-mode-abbrev-table "jpa" "" #'skl-js-package)
+      (define-abbrev js-mode-abbrev-table "jpf" "" #'skl-js-package-function)
+      (define-abbrev js-mode-abbrev-table "cl" "" #'skl-js-consolelog)
+
+      (unless (boundp 'web-mode-abbrev-table) (define-abbrev-table 'web-mode-abbrev-table '()))
+      (define-abbrev web-mode-abbrev-table "hh" "" #'skl-html-dev)
+      (define-abbrev web-mode-abbrev-table "hs" "" #'skl-html-script-tag)
+      (define-abbrev web-mode-abbrev-table "hc" "" #'skl-html-css-include)
+
+      ;; Modes that have abbrev tables pre-defined
+      ;; Emacs Lisp
+      (define-abbrev emacs-lisp-mode-abbrev-table "ff" "" #'skl-elisp-function-interactive)
+      (define-abbrev emacs-lisp-mode-abbrev-table "fc" "" #'skl-elisp-mapc)
+
+    #+END_SRC
+* Custom File
+  #+BEGIN_SRC emacs-lisp
+    (setq custom-file dotemacs--custom-file)
+    (load custom-file 'noerror)
+
+  #+END_SRC
 * Packages
   #+BEGIN_SRC emacs-lisp
     (package-initialize)
   #+END_SRC
+* Org Mode
+** Org Mode Initialize
+   #+BEGIN_SRC emacs-lisp
+     (require 'org) ;; This is needed to create org-structure-template-alist
+
+   #+END_SRC
+
+** Org Templates
+   https://blog.aaronbieber.com/2016/11/23/creating-org-mode-structure-templates.html
+
+   #+BEGIN_SRC emacs-lisp
+     (mapcar (lambda (x) (add-to-list 'org-structure-template-alist x))
+             (list
+              (list "se" (concat "#+BEGIN_SRC emacs-lisp\n"
+                                 "?\n"
+                                 "#+END_SRC"))
+              (list "ss" (concat "#+BEGIN_SRC sh\n"
+                                 "?\n"
+                                 "#+END_SRC"))
+              (list "p" (concat ":PROPERTIES:\n"
+                                "?\n"
+                                ":END:"))
+              (list "eh" (concat ":EXPORT_FILE_NAME: ?\n"
+                                 ":EXPORT_TITLE:\n"
+                                 ":EXPORT_OPTIONS: toc:nil html-postamble:nil num:nil"))))
+
+   #+END_SRC
+
+** Org Mode Babel open source buffer in current window (C-c ')
+   #+BEGIN_SRC emacs-lisp
+     (setq org-src-window-setup 'current-window)
+   #+END_SRC
 * Global Keybindings
   #+BEGIN_SRC emacs-lisp
     (global-set-key (kbd "C-x C-b") #'ibuffer)
     (global-set-key (kbd "C-.") #'next-buffer)
     (global-set-key (kbd "C-,") #'previous-buffer)
     (global-set-key (kbd "C-;") #'delete-other-windows)
+
+    (global-set-key (kbd "C-c s") #'dotemacs--full-scratch)
+    (global-set-key (kbd "C-c q") #'comment-or-uncomment-region)
+    (global-set-key (kbd "C-c e") #'eval-buffer)
+    (global-set-key (kbd "C-c k") #'my/test-buffer-interactive-input)
+    (global-set-key (kbd "C-c K") #'my/kill-open-buffers-except-those-start-with-space-and-messages)
+    (global-set-key (kbd "C-c m") #'bookmark-bmenu-list)
+    (global-set-key (kbd "C-c r") #'append-to-register)
 
   #+END_SRC
