@@ -1,0 +1,4 @@
+* emacs client
+
+  ec/et emacs client scripts from:
+  https://github.com/mjwall/dotfiles/blob/master/bin/et

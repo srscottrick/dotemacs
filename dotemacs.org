@@ -58,6 +58,15 @@
    #+END_SRC
 ** GUI Setup
    #+BEGIN_SRC emacs-lisp
+     (defun minimal-gui ()
+       (menu-bar-mode 0)
+       (blink-cursor-mode 0)
+       (scroll-bar-mode 0)
+       (tool-bar-mode 0)
+       (tooltip-mode 0))
+     (when window-system (minimal-gui))
+     (add-hook 'after-make-frame-functions (lambda (_) (minimal-gui))) ;; _ arg is frame passed from hook
+
      (when window-system
        (menu-bar-mode 0)
        (blink-cursor-mode 0)
