@@ -1,4 +1,4 @@
-#+PROPERTY: header-args :tangle yes
+#+PROPERTY: header-args :tangle ~/._emacs
 * Constants
 ** Backups Constants
    #+BEGIN_SRC emacs-lisp
