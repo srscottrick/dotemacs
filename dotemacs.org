@@ -197,6 +197,70 @@
 
 
   #+END_SRC
+** Filtering and Grouping by Directory
+   [[https://emacs.stackexchange.com/questions/10621/how-to-get-ibuffer-to-use-directory-tree-as-filter-groups][From StackExchange]] [[https://emacs.stackexchange.com/users/651/jpkotta][by jpkotta]]
+   #+BEGIN_SRC emacs-lisp
+     ;; https://emacs.stackexchange.com/questions/10621/how-to-get-ibuffer-to-use-directory-tree-as-filter-groups
+
+     (require 'cl)
+     (define-ibuffer-sorter pathname
+       "Sort by pathname"
+       (:description "path")
+       (cl-flet ((get-pathname
+		  (data)
+		  (with-current-buffer (car data)
+		    (or buffer-file-name
+			(if (eq major-mode 'dired-mode)
+			    (expand-file-name dired-directory))
+			;; so that all non pathnames are at the end
+			""))))
+	 (string< (get-pathname a) (get-pathname b))))
+
+     (define-key ibuffer-mode-map
+       (kbd "s p") 'ibuffer-do-sort-by-pathname)
+
+     (defun get-all-buffer-directories ()
+       "Return a list of all directories that have at least one
+	    file being visited."
+       (interactive)
+       (let (l)
+	 (dolist (e (sort (mapcar 'file-name-directory
+				  (remove-if-not 'identity
+						 (mapcar 'buffer-file-name
+							 (buffer-list))))
+			  'string<))
+	   (unless (string= (car l) e)
+	     (setq l (cons e l))))
+	 l))
+
+     (define-ibuffer-filter dirname
+	 "Toggle current view to buffers with in a directory DIRNAME."
+       (:description "directory name"
+		     :reader
+		     (intern
+		      (completing-read "Filter by directory: "
+				       (get-all-buffer-directories)
+				       'identity
+				       t nil nil nil nil)))
+       (string= qualifier
+		(and (buffer-file-name buf)
+		     (file-name-directory (buffer-file-name buf)))))
+
+     (defun ibuffer-set-filter-groups-by-directory ()
+       "Set the current filter groups to filter by directory."
+       (interactive)
+       (setq ibuffer-filter-groups
+	     (mapcar (lambda (dir)
+		       (cons (format "%s" dir) `((dirname . ,dir))))
+		     (get-all-buffer-directories)))
+       (ibuffer-update nil t))
+
+     (define-key ibuffer-mode-map
+       (kbd "/ D") 'ibuffer-set-filter-groups-by-directory)
+     (define-key ibuffer-mode-map
+       (kbd "/ d") 'ibuffer-filter-by-dirname)
+
+   #+END_SRC
 * Helper Functions
   #+BEGIN_SRC emacs-lisp
     (defun dotemacs--full-scratch ()
@@ -426,12 +490,14 @@
       (define-abbrev emacs-lisp-mode-abbrev-table "fc" "" #'skl-elisp-mapc)
 
     #+END_SRC
-* Custom File
-  #+BEGIN_SRC emacs-lisp
-    (setq custom-file dotemacs--custom-file)
-    (load custom-file 'noerror)
+* Customize
+  [[https://emacs.stackexchange.com/questions/102/advantages-of-setting-variables-with-setq-instead-of-custom-el/106#106][Some general notes about using customize]]
+** Custom File
+   #+BEGIN_SRC emacs-lisp
+     (setq custom-file dotemacs--custom-file)
+     (load custom-file 'noerror)
 
-  #+END_SRC
+   #+END_SRC
 * Packages
   #+BEGIN_SRC emacs-lisp
     (package-initialize)
