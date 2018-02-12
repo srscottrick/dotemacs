@@ -436,6 +436,24 @@
 	  "HTML5 App Template"
 	"<!DOCTYPE html>"
 	"<html>" "\n"
+	"  <head>" "\n"
+	"    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">" "\n"
+	"    <meta charset=\"utf-8\">" "\n"
+	"    <style>" "\n"
+	"    </style>" "\n"
+	"  </head>" "\n"
+	"  <body>" "\n"
+	"    <script>" "\n"
+	"     window.onload = function() {" "\n"
+	"     }" "\n"
+	"    </script>" "\n"
+	"  </body>" "\n"
+	"</html>" "\n")
+
+      (define-skeleton skl-html-dev2
+	  "HTML5 App Template"
+	"<!DOCTYPE html>"
+	"<html>" "\n"
 	"    <head>" "\n"
 	"	<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">" "\n"
 	"	<link rel=\"stylesheet\" href=\"https://unpkg.com/purecss@1.0.0/build/pure-min.css\">" "\n"
@@ -501,6 +519,9 @@
 * Packages
   #+BEGIN_SRC emacs-lisp
     (package-initialize)
+    (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
+    (add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+
   #+END_SRC
 * Org Mode
 ** Org Mode Initialize
@@ -534,6 +555,15 @@
    #+BEGIN_SRC emacs-lisp
      (setq org-src-window-setup 'current-window)
    #+END_SRC
+* Web Mode
+  #+BEGIN_SRC emacs-lisp
+    (if (package-installed-p 'web-mode)
+	(progn
+	  (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
+	  (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
+	  (add-to-list 'auto-mode-alist '("\\.ejs\\'" . web-mode))
+	  (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))))
+  #+END_SRC
 * Global Keybindings
   #+BEGIN_SRC emacs-lisp
     (global-set-key (kbd "C-x C-b") #'ibuffer)
@@ -549,4 +579,10 @@
     (global-set-key (kbd "C-c m") #'bookmark-bmenu-list)
     (global-set-key (kbd "C-c r") #'append-to-register)
 
+  #+END_SRC
+* Maximize frame
+  #+BEGIN_SRC emacs-lisp
+    (add-to-list 'initial-frame-alist '(fullscreen . maximized))
+    ;;(add-to-list 'default-frame-alist '(fullscreen . fullheight))
+    (add-to-list 'default-frame-alist '(fullscreen . maximized))
   #+END_SRC
