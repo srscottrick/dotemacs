@@ -365,15 +365,15 @@
 	(view-mode)
 	(delete-other-windows)))
 
-    (defun dotemacs-org-to-json (org-file)
+    (defun dotemacs-org-to-json (org-file format-string)
       "Takes an org file of one level headings and creates a json object list with the heading and the content"
       (interactive)
-
+      (require 'subr-x)
       (defun display-element (element)
 	(let ((title (org-element-property :title element))
 	      (begin (org-element-property :contents-begin element))
 	      (end (org-element-property :contents-end element)))
-	  (format "{\"%s\" : \"%s\"}" title (string-trim (buffer-substring begin end)))))
+	  (format format-string title (string-trim (buffer-substring begin end)))))
 
       (with-temp-buffer
 	(insert-file-contents org-file)
