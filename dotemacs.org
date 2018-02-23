@@ -315,7 +315,7 @@
 
       (if (y-or-n-p "Really kill open buffers except *Messages* and those that start with space, prompting for each if modified?")
 	  (mapc (lambda (b) (unless (equal " " (substring (buffer-name b) 0 1))
-			 (dotemacs--kill-buffer b)))
+			      (dotemacs--kill-buffer b)))
 		(delq (get-buffer "*Messages*") (buffer-list)))))
 
     (defun dotemacs-empty-directory (dir)
@@ -365,6 +365,25 @@
 	(view-mode)
 	(delete-other-windows)))
 
+    (defun dotemacs-org-to-json (org-file)
+      "Takes an org file of one level headings and creates a json object list with the heading and the content"
+      (interactive)
+
+      (defun display-element (element)
+	(let ((title (org-element-property :title element))
+	      (begin (org-element-property :contents-begin element))
+	      (end (org-element-property :contents-end element)))
+	  (format "{\"%s\" : \"%s\"}" title (string-trim (buffer-substring begin end)))))
+
+      (with-temp-buffer
+	(insert-file-contents org-file)
+	(mapconcat
+	 'concat
+	 (org-element-map
+	     (org-element-parse-buffer 'headline)
+	     '(paragraph headline)
+	   #'display-element)
+	 ",\n")))
   #+END_SRC
 * Bookmarks
   #+BEGIN_SRC emacs-lisp
