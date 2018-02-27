@@ -547,6 +547,40 @@
     (add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 
   #+END_SRC
+* Misc Packages
+** Aggressive Indent Mode
+   From melpa which has a more current version than elpa
+   #+BEGIN_SRC emacs-lisp
+     (add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode)
+       
+   #+END_SRC
+** Company Mode (Complete Any)
+   #+BEGIN_SRC emacs-lisp
+     (add-hook 'after-init-hook 'global-company-mode)
+   #+END_SRC
+*** On-Screen Mode
+    https://elpa.gnu.org/packages/on-screen.html
+    #+BEGIN_SRC emacs-lisp
+      ;; (on-screen-global-mode +1)
+      (add-hook 'Info-mode-hook 'on-screen-mode)
+    #+END_SRC
+*** seq - Functions for manipulating sequences
+    https://elpa.gnu.org/packages/seq.html
+    #+BEGIN_SRC emacs-lisp
+      (require 'seq)
+    #+END_SRC
+*** which-key
+    https://github.com/justbur/emacs-which-key
+    #+BEGIN_SRC emacs-lisp
+      (require 'which-key)
+      (which-key-mode)
+    #+END_SRC
+*** Windresize
+    https://elpa.gnu.org/packages/windresize.html
+    M-x windresize
+    #+BEGIN_SRC emacs-lisp
+      (require 'windresize)
+    #+END_SRC
 * Org Mode
 ** Org Mode Initialize
    #+BEGIN_SRC emacs-lisp
