@@ -5,6 +5,11 @@
     (setq debug-on-error t)
   #+END_SRC
 * Constants
+** Local Packages
+   #+BEGIN_SRC emacs-lisp
+     (defconst dotemacs--localpackages-directory (expand-file-name "localpackages" user-emacs-directory))
+
+   #+END_SRC
 ** Backups Constants
    #+BEGIN_SRC emacs-lisp
      (defconst dotemacs--enable-backups 'yes)
@@ -547,6 +552,11 @@
     (add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
 
   #+END_SRC
+* Local Packages
+  #+BEGIN_SRC emacs-lisp
+    (add-to-list 'load-path dotemacs--localpackages-directory)
+  #+END_SRC
+
 * Misc Packages
 ** Aggressive Indent Mode
    From melpa which has a more current version than elpa
