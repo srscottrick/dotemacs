@@ -7,7 +7,7 @@
 * Constants
 ** Local Packages
    #+BEGIN_SRC emacs-lisp
-     (defconst dotemacs--localpackages-directory (expand-file-name "localpackages" user-emacs-directory))
+     (defconst dotemacs--localpackages-directory (expand-file-name "lisp" user-emacs-directory))
 
    #+END_SRC
 ** Backups Constants
@@ -547,16 +547,37 @@
    #+END_SRC
 * Packages
   #+BEGIN_SRC emacs-lisp
-    (package-initialize)
+    (require 'package)
+    (setq package-enable-at-startup nil)
+    (add-to-list 'package-archives
+                 '("melpa" . "https://melpa.org/packages/"))
+
     (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
-    (add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+
+    (package-initialize)
 
   #+END_SRC
+** Bootstrap use-package
+   #+BEGIN_SRC emacs-lisp
+     ;; Bootstrap `use-package'
+     (unless (package-installed-p 'use-package)
+       (package-refresh-contents)
+       (package-install 'use-package))
+
+     (eval-when-compile
+       (require 'use-package))
+   #+END_SRC
+
 * Local Packages
   #+BEGIN_SRC emacs-lisp
-    (add-to-list 'load-path dotemacs--localpackages-directory)
+    ;;(add-to-list 'load-path dotemacs--localpackages-directory)
+    (let ((default-directory  dotemacs--localpackages-directory))
+      (normal-top-level-add-subdirs-to-load-path))
   #+END_SRC
-
+** Bookmark+
+   #+BEGIN_SRC emacs-lisp
+     (require 'bookmark+)
+   #+END_SRC
 * Misc Packages
 ** Aggressive Indent Mode
    From melpa which has a more current version than elpa
