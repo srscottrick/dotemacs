@@ -1,2 +1,8 @@
 * Emacs Client Scripts
   Emacs Client scripts (ec/et/es) from: [[http://mjwall.com/blog/2013/10/04/how-i-use-emacs/][mjwall]] ([[https://github.com/mjwall/dotfiles/blob/master/bin/][github]])
+* List of good dotemacs files
+  https://github.com/eastwood/config/blob/master/emacs.d/org-init.org
+* Some use-package info
+  https://github.com/jwiegley/use-package/issues/219
+* Bookmark+
+  https://github.com/emacsmirror/bookmark-plus/

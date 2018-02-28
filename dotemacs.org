@@ -403,8 +403,10 @@
 
    #+END_SRC
 * Packages
+
   #+BEGIN_SRC emacs-lisp
     (require 'package)
+    ;;(setq use-package-always-ensure t)
     (setq package-enable-at-startup nil)
     (add-to-list 'package-archives
                  '("melpa" . "https://melpa.org/packages/"))
@@ -425,6 +427,7 @@
        (require 'use-package))
    #+END_SRC
 * Local Packages
+  Local packages not in elpa/melpa package repos
   #+BEGIN_SRC emacs-lisp
     ;;(add-to-list 'load-path dotemacs--localpackages-directory)
     (if (file-directory-p dotemacs--localpackages-directory)
@@ -432,11 +435,14 @@
           (normal-top-level-add-subdirs-to-load-path)))
   #+END_SRC
 ** Bookmark+
+   Make emacs bookmarks useful. Clone the repo into .emacs.d/lisp
+   https://github.com/emacsmirror/bookmark-plus/
    #+BEGIN_SRC emacs-lisp
-     ;;(require 'bookmark+)
+     (require 'bookmark+)
    #+END_SRC
 ** Aggressive Indent Mode
    From melpa which has a more current version than elpa
+
    #+BEGIN_SRC emacs-lisp
      (use-package aggressive-indent
        :ensure t
@@ -445,7 +451,8 @@
 
 
    #+END_SRC
-** Company Mode (Complete Any)
+** Company Mode
+   Complete Any
    #+BEGIN_SRC emacs-lisp
      (use-package company
        :ensure t
@@ -514,7 +521,23 @@
    #+BEGIN_SRC emacs-lisp
      (setq org-src-window-setup 'current-window)
    #+END_SRC
+
+** Org Bullets
+   Cool looking bullet points for org mode
+   #+BEGIN_SRC emacs-lisp
+     (use-package org-bullets
+       :ensure t
+       :config
+       (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+   #+END_SRC
+
+* Autcomplete
+  #+BEGIN_SRC emacs-lisp
+    (use-package auto-complete
+      :ensure t)
+  #+END_SRC
 * Web Mode
+  good support for mixed languages in web pages
   #+BEGIN_SRC emacs-lisp
     (use-package web-mode
       :ensure t
@@ -522,18 +545,14 @@
       (setq web-mode-markup-indent-offset 2)
       (setq web-mode-css-indent-offset 2)
       (setq web-mode-code-indent-offset 2)
+      (setq web-mode-attr-indent-offset 2)
       (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
       (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
       (add-to-list 'auto-mode-alist '("\\.ejs\\'" . web-mode))
       (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode)))
 
-    ;; (if (package-installed-p 'web-mode)
-    ;;     (progn
-    ;;       (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
-    ;;       (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
-    ;;       (add-to-list 'auto-mode-alist '("\\.ejs\\'" . web-mode))
-    ;;       (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))))
   #+END_SRC
+
 * CSS Mode
   #+BEGIN_SRC emacs-lisp
     (use-package css-mode
@@ -542,7 +561,73 @@
       (setq css-indent-offset 2))
       
   #+END_SRC
+* Yaml Mode
+  #+BEGIN_SRC emacs-lisp
+    (use-package yaml-mode
+      :ensure t
+      :mode ("\\.yml\\'" . yaml-mode))
+  #+END_SRC
 
+* RJSX Mode
+  Good support for JSX used in React
+  #+BEGIN_SRC emacs-lisp
+    (use-package rjsx-mode
+      :ensure t
+      :config
+      (setq js2-basic-offset 2)
+      (add-to-list 'auto-mode-alist '("\\.js\\'" . rjsx-mode)))
+  #+END_SRC
+
+* JSON Mode
+  #+BEGIN_SRC emacs-lisp
+    (use-package json-mode
+      :ensure t)
+  #+END_SRC
+
+* NPM Mode
+  Run npm scripts from emacs
+  #+BEGIN_SRC emacs-lisp
+    (use-package npm-mode
+      :ensure t)
+  #+END_SRC
+
+* Magit
+  Excellent git support for emacs
+  #+BEGIN_SRC emacs-lisp
+    (use-package magit
+      :ensure t
+      :commands magit-status)
+
+  #+END_SRC
+
+* Markdown
+  #+BEGIN_SRC emacs-lisp
+    (use-package markdown-mode
+      :ensure t
+      :commands (markdown-mode))
+
+  #+END_SRC
+
+* Smart Parens
+  #+BEGIN_SRC emacs-lisp
+    (use-package smartparens
+      :ensure t)
+  #+END_SRC
+
+* Clojure
+
+** Clojure Mode
+   #+BEGIN_SRC emacs-lisp
+     (use-package clojure-mode
+       :ensure t)
+
+   #+END_SRC
+** Cider Mode
+   #+BEGIN_SRC emacs-lisp
+     (use-package cider
+       :ensure t)
+
+   #+END_SRC
 * Global Keybindings
   #+BEGIN_SRC emacs-lisp
     (global-set-key (kbd "C-x C-b") #'ibuffer)
