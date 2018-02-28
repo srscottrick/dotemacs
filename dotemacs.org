@@ -394,6 +394,156 @@
   #+BEGIN_SRC emacs-lisp
     (setq bookmark-default-file dotemacs--bookmark-default-file)
   #+END_SRC
+* Customize
+  [[https://emacs.stackexchange.com/questions/102/advantages-of-setting-variables-with-setq-instead-of-custom-el/106#106][Some general notes about using customize]]
+** Custom File
+   #+BEGIN_SRC emacs-lisp
+     (setq custom-file dotemacs--custom-file)
+     (load custom-file 'noerror)
+
+   #+END_SRC
+* Packages
+  #+BEGIN_SRC emacs-lisp
+    (require 'package)
+    (setq package-enable-at-startup nil)
+    (add-to-list 'package-archives
+                 '("melpa" . "https://melpa.org/packages/"))
+
+    (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
+
+    (package-initialize)
+
+  #+END_SRC
+** Bootstrap use-package
+   #+BEGIN_SRC emacs-lisp
+     ;; Bootstrap `use-package'
+     (unless (package-installed-p 'use-package)
+       (package-refresh-contents)
+       (package-install 'use-package))
+
+     (eval-when-compile
+       (require 'use-package))
+   #+END_SRC
+* Local Packages
+  #+BEGIN_SRC emacs-lisp
+    ;;(add-to-list 'load-path dotemacs--localpackages-directory)
+    (let ((default-directory  dotemacs--localpackages-directory))
+      (normal-top-level-add-subdirs-to-load-path))
+  #+END_SRC
+** Bookmark+
+   #+BEGIN_SRC emacs-lisp
+     (require 'bookmark+)
+   #+END_SRC
+* Misc Packages
+** Aggressive Indent Mode
+   From melpa which has a more current version than elpa
+   #+BEGIN_SRC emacs-lisp
+     (add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode)
+       
+   #+END_SRC
+** Company Mode (Complete Any)
+   #+BEGIN_SRC emacs-lisp
+     (add-hook 'after-init-hook 'global-company-mode)
+   #+END_SRC
+*** On-Screen Mode
+    https://elpa.gnu.org/packages/on-screen.html
+    #+BEGIN_SRC emacs-lisp
+      ;; (on-screen-global-mode +1)
+      (add-hook 'Info-mode-hook 'on-screen-mode)
+    #+END_SRC
+*** seq - Functions for manipulating sequences
+    https://elpa.gnu.org/packages/seq.html
+    #+BEGIN_SRC emacs-lisp
+      (require 'seq)
+    #+END_SRC
+*** which-key
+    https://github.com/justbur/emacs-which-key
+    #+BEGIN_SRC emacs-lisp
+      (require 'which-key)
+      (which-key-mode)
+    #+END_SRC
+*** Windresize
+    https://elpa.gnu.org/packages/windresize.html
+    M-x windresize
+    #+BEGIN_SRC emacs-lisp
+      (require 'windresize)
+    #+END_SRC
+* Org Mode
+** Org Mode Initialize
+   #+BEGIN_SRC emacs-lisp
+     (require 'org) ;; This is needed to create org-structure-template-alist
+
+   #+END_SRC
+
+** Org Templates
+   https://blog.aaronbieber.com/2016/11/23/creating-org-mode-structure-templates.html
+
+   #+BEGIN_SRC emacs-lisp
+     (mapcar (lambda (x) (add-to-list 'org-structure-template-alist x))
+             (list
+              (list "se" (concat "#+BEGIN_SRC emacs-lisp\n"
+                                 "?\n"
+                                 "#+END_SRC"))
+              (list "ss" (concat "#+BEGIN_SRC sh\n"
+                                 "?\n"
+                                 "#+END_SRC"))
+              (list "p" (concat ":PROPERTIES:\n"
+                                "?\n"
+                                ":END:"))
+              (list "eh" (concat ":EXPORT_FILE_NAME: ?\n"
+                                 ":EXPORT_TITLE:\n"
+                                 ":EXPORT_OPTIONS: toc:nil html-postamble:nil num:nil"))))
+
+   #+END_SRC
+
+** Org Mode Babel open source buffer in current window (C-c ')
+   #+BEGIN_SRC emacs-lisp
+     (setq org-src-window-setup 'current-window)
+   #+END_SRC
+* Web Mode
+  #+BEGIN_SRC emacs-lisp
+    (use-package web-mode
+      :ensure t
+      :config
+      (setq web-mode-markup-indent-offset 2)
+      (setq web-mode-css-indent-offset 2)
+      (setq web-mode-code-indent-offset 2)
+      (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
+      (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
+      (add-to-list 'auto-mode-alist '("\\.ejs\\'" . web-mode))
+      (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode)))
+
+    ;; (if (package-installed-p 'web-mode)
+    ;;     (progn
+    ;;       (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
+    ;;       (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
+    ;;       (add-to-list 'auto-mode-alist '("\\.ejs\\'" . web-mode))
+    ;;       (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))))
+  #+END_SRC
+* CSS Mode
+  #+BEGIN_SRC emacs-lisp
+    (use-package css-mode
+      :ensure t
+      :config
+      (setq css-indent-offset 2))
+      
+  #+END_SRC
+* Global Keybindings
+  #+BEGIN_SRC emacs-lisp
+    (global-set-key (kbd "C-x C-b") #'ibuffer)
+    (global-set-key (kbd "C-.") #'next-buffer)
+    (global-set-key (kbd "C-,") #'previous-buffer)
+    (global-set-key (kbd "C-;") #'delete-other-windows)
+
+    (global-set-key (kbd "C-c s") #'dotemacs--full-scratch)
+    (global-set-key (kbd "C-c q") #'comment-or-uncomment-region)
+    (global-set-key (kbd "C-c e") #'eval-buffer)
+    (global-set-key (kbd "C-c k") #'my/test-buffer-interactive-input)
+    (global-set-key (kbd "C-c K") #'my/kill-open-buffers-except-those-start-with-space-and-messages)
+    (global-set-key (kbd "C-c m") #'bookmark-bmenu-list)
+    (global-set-key (kbd "C-c r") #'append-to-register)
+
+  #+END_SRC
 * Skeletons
 *** Emacs
     #+BEGIN_SRC emacs-lisp
@@ -537,138 +687,6 @@
       (define-abbrev emacs-lisp-mode-abbrev-table "fc" "" #'skl-elisp-mapc)
 
     #+END_SRC
-* Customize
-  [[https://emacs.stackexchange.com/questions/102/advantages-of-setting-variables-with-setq-instead-of-custom-el/106#106][Some general notes about using customize]]
-** Custom File
-   #+BEGIN_SRC emacs-lisp
-     (setq custom-file dotemacs--custom-file)
-     (load custom-file 'noerror)
-
-   #+END_SRC
-* Packages
-  #+BEGIN_SRC emacs-lisp
-    (require 'package)
-    (setq package-enable-at-startup nil)
-    (add-to-list 'package-archives
-                 '("melpa" . "https://melpa.org/packages/"))
-
-    (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
-
-    (package-initialize)
-
-  #+END_SRC
-** Bootstrap use-package
-   #+BEGIN_SRC emacs-lisp
-     ;; Bootstrap `use-package'
-     (unless (package-installed-p 'use-package)
-       (package-refresh-contents)
-       (package-install 'use-package))
-
-     (eval-when-compile
-       (require 'use-package))
-   #+END_SRC
-
-* Local Packages
-  #+BEGIN_SRC emacs-lisp
-    ;;(add-to-list 'load-path dotemacs--localpackages-directory)
-    (let ((default-directory  dotemacs--localpackages-directory))
-      (normal-top-level-add-subdirs-to-load-path))
-  #+END_SRC
-** Bookmark+
-   #+BEGIN_SRC emacs-lisp
-     (require 'bookmark+)
-   #+END_SRC
-* Misc Packages
-** Aggressive Indent Mode
-   From melpa which has a more current version than elpa
-   #+BEGIN_SRC emacs-lisp
-     (add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode)
-       
-   #+END_SRC
-** Company Mode (Complete Any)
-   #+BEGIN_SRC emacs-lisp
-     (add-hook 'after-init-hook 'global-company-mode)
-   #+END_SRC
-*** On-Screen Mode
-    https://elpa.gnu.org/packages/on-screen.html
-    #+BEGIN_SRC emacs-lisp
-      ;; (on-screen-global-mode +1)
-      (add-hook 'Info-mode-hook 'on-screen-mode)
-    #+END_SRC
-*** seq - Functions for manipulating sequences
-    https://elpa.gnu.org/packages/seq.html
-    #+BEGIN_SRC emacs-lisp
-      (require 'seq)
-    #+END_SRC
-*** which-key
-    https://github.com/justbur/emacs-which-key
-    #+BEGIN_SRC emacs-lisp
-      (require 'which-key)
-      (which-key-mode)
-    #+END_SRC
-*** Windresize
-    https://elpa.gnu.org/packages/windresize.html
-    M-x windresize
-    #+BEGIN_SRC emacs-lisp
-      (require 'windresize)
-    #+END_SRC
-* Org Mode
-** Org Mode Initialize
-   #+BEGIN_SRC emacs-lisp
-     (require 'org) ;; This is needed to create org-structure-template-alist
-
-   #+END_SRC
-
-** Org Templates
-   https://blog.aaronbieber.com/2016/11/23/creating-org-mode-structure-templates.html
-
-   #+BEGIN_SRC emacs-lisp
-     (mapcar (lambda (x) (add-to-list 'org-structure-template-alist x))
-             (list
-              (list "se" (concat "#+BEGIN_SRC emacs-lisp\n"
-                                 "?\n"
-                                 "#+END_SRC"))
-              (list "ss" (concat "#+BEGIN_SRC sh\n"
-                                 "?\n"
-                                 "#+END_SRC"))
-              (list "p" (concat ":PROPERTIES:\n"
-                                "?\n"
-                                ":END:"))
-              (list "eh" (concat ":EXPORT_FILE_NAME: ?\n"
-                                 ":EXPORT_TITLE:\n"
-                                 ":EXPORT_OPTIONS: toc:nil html-postamble:nil num:nil"))))
-
-   #+END_SRC
-
-** Org Mode Babel open source buffer in current window (C-c ')
-   #+BEGIN_SRC emacs-lisp
-     (setq org-src-window-setup 'current-window)
-   #+END_SRC
-* Web Mode
-  #+BEGIN_SRC emacs-lisp
-    (if (package-installed-p 'web-mode)
-	(progn
-	  (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
-	  (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
-	  (add-to-list 'auto-mode-alist '("\\.ejs\\'" . web-mode))
-	  (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))))
-  #+END_SRC
-* Global Keybindings
-  #+BEGIN_SRC emacs-lisp
-    (global-set-key (kbd "C-x C-b") #'ibuffer)
-    (global-set-key (kbd "C-.") #'next-buffer)
-    (global-set-key (kbd "C-,") #'previous-buffer)
-    (global-set-key (kbd "C-;") #'delete-other-windows)
-
-    (global-set-key (kbd "C-c s") #'dotemacs--full-scratch)
-    (global-set-key (kbd "C-c q") #'comment-or-uncomment-region)
-    (global-set-key (kbd "C-c e") #'eval-buffer)
-    (global-set-key (kbd "C-c k") #'my/test-buffer-interactive-input)
-    (global-set-key (kbd "C-c K") #'my/kill-open-buffers-except-those-start-with-space-and-messages)
-    (global-set-key (kbd "C-c m") #'bookmark-bmenu-list)
-    (global-set-key (kbd "C-c r") #'append-to-register)
-
-  #+END_SRC
 * Maximize frame
   #+BEGIN_SRC emacs-lisp
     (add-to-list 'initial-frame-alist '(fullscreen . maximized))
