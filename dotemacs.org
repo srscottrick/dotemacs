@@ -427,47 +427,61 @@
 * Local Packages
   #+BEGIN_SRC emacs-lisp
     ;;(add-to-list 'load-path dotemacs--localpackages-directory)
-    (let ((default-directory  dotemacs--localpackages-directory))
-      (normal-top-level-add-subdirs-to-load-path))
+    (if (file-directory-p dotemacs--localpackages-directory)
+        (let ((default-directory dotemacs--localpackages-directory))
+          (normal-top-level-add-subdirs-to-load-path)))
   #+END_SRC
 ** Bookmark+
    #+BEGIN_SRC emacs-lisp
-     (require 'bookmark+)
+     ;;(require 'bookmark+)
    #+END_SRC
-* Misc Packages
 ** Aggressive Indent Mode
    From melpa which has a more current version than elpa
    #+BEGIN_SRC emacs-lisp
-     (add-hook 'emacs-lisp-mode-hook #'aggressive-indent-mode)
-       
+     (use-package aggressive-indent
+       :ensure t
+       :config
+       (add-hook 'emacs-lisp-mode-hook 'aggressive-indent-mode))
+
+
    #+END_SRC
 ** Company Mode (Complete Any)
    #+BEGIN_SRC emacs-lisp
-     (add-hook 'after-init-hook 'global-company-mode)
+     (use-package company
+       :ensure t
+       :config
+       (add-hook 'after-init-hook 'global-company-mode))
    #+END_SRC
-*** On-Screen Mode
-    https://elpa.gnu.org/packages/on-screen.html
-    #+BEGIN_SRC emacs-lisp
-      ;; (on-screen-global-mode +1)
-      (add-hook 'Info-mode-hook 'on-screen-mode)
-    #+END_SRC
-*** seq - Functions for manipulating sequences
-    https://elpa.gnu.org/packages/seq.html
-    #+BEGIN_SRC emacs-lisp
-      (require 'seq)
-    #+END_SRC
-*** which-key
-    https://github.com/justbur/emacs-which-key
-    #+BEGIN_SRC emacs-lisp
-      (require 'which-key)
-      (which-key-mode)
-    #+END_SRC
-*** Windresize
-    https://elpa.gnu.org/packages/windresize.html
-    M-x windresize
-    #+BEGIN_SRC emacs-lisp
-      (require 'windresize)
-    #+END_SRC
+** On-Screen Mode
+   https://elpa.gnu.org/packages/on-screen.html
+   #+BEGIN_SRC emacs-lisp
+     (use-package on-screen
+       :ensure t
+       :config
+       (on-screen-global-mode +1)
+       (add-hook 'Info-mode-hook 'on-screen-mode))
+   #+END_SRC
+** seq - Functions for manipulating sequences
+   https://elpa.gnu.org/packages/seq.html
+   #+BEGIN_SRC emacs-lisp
+     (use-package seq
+       :ensure t)
+   #+END_SRC
+** which-key
+   https://github.com/justbur/emacs-which-key
+   #+BEGIN_SRC emacs-lisp
+     (use-package which-key
+       :ensure t
+       :config
+       (which-key-mode))
+   #+END_SRC
+** Windresize
+   https://elpa.gnu.org/packages/windresize.html
+   M-x windresize
+   #+BEGIN_SRC emacs-lisp
+     (use-package windresize
+       :ensure t)
+   #+END_SRC
 * Org Mode
 ** Org Mode Initialize
    #+BEGIN_SRC emacs-lisp
@@ -528,6 +542,7 @@
       (setq css-indent-offset 2))
       
   #+END_SRC
+
 * Global Keybindings
   #+BEGIN_SRC emacs-lisp
     (global-set-key (kbd "C-x C-b") #'ibuffer)
