@@ -1,0 +1,813 @@
+#+PROPERTY: header-args :tangle ~/._emacs
+
+* Debug
+  #+BEGIN_SRC emacs-lisp
+    (setq debug-on-error t)
+  #+END_SRC
+* Constants
+** Local Packages
+   #+BEGIN_SRC emacs-lisp
+     (defconst dotemacs--localpackages-directory (expand-file-name "lisp" user-emacs-directory))
+
+   #+END_SRC
+** Backups Constants
+   #+BEGIN_SRC emacs-lisp
+     (defconst dotemacs--enable-backups 'yes)
+     (defconst dotemacs--backups-directory (expand-file-name "backups" user-emacs-directory))
+
+   #+END_SRC
+** Autosave Constants
+   #+BEGIN_SRC emacs-lisp
+     (defconst dotemacs--auto-save-enabled 'yes)
+     (defconst dotemacs--auto-save-list-file-prefix (expand-file-name "autosaves/autosave-" user-emacs-directory))
+     (defconst dotemacs--auto-save-transforms "autosaves")
+
+   #+END_SRC
+** Abbrev Constants
+   #+BEGIN_SRC emacs-lisp
+     (defconst dotemacs--abbrev-file-name (expand-file-name "abbrev_defs" user-emacs-directory))
+
+   #+END_SRC
+** Custom File Constants
+   #+BEGIN_SRC emacs-lisp
+     (defconst dotemacs--custom-file (expand-file-name ".emacs-custom.el" "~"))
+
+   #+END_SRC
+** Bookmarks Constants
+   #+BEGIN_SRC emacs-lisp
+     (defconst dotemacs--bookmark-default-file (expand-file-name ".emacs-bookmarks.el" "~"))
+   #+END_SRC
+** Default Theme
+   #+BEGIN_SRC emacs-lisp
+     (defconst dotemacs--default-theme 'tango-dark)
+   #+END_SRC
+** IDO Constants
+   #+BEGIN_SRC emacs-lisp
+     (defconst dotemacs--ido-last (expand-file-name "ido.last" user-emacs-directory))
+
+   #+END_SRC
+* Theme
+  #+BEGIN_SRC emacs-lisp
+    (load-theme dotemacs--default-theme)
+  #+END_SRC
+* Emacs UI
+** Start up
+   #+BEGIN_SRC emacs-lisp
+     (setq-default
+      initial-scratch-message nil
+      inhibit-splash-screen t)
+
+   #+END_SRC
+** Bell
+   #+BEGIN_SRC emacs-lisp
+     (setq-default
+      visible-bell t
+      ring-bell-function #'ignore)
+
+   #+END_SRC
+** Confirm on exit
+   #+BEGIN_SRC emacs-lisp
+     (setq-default
+      confirm-kill-emacs 'yes-or-no-p)
+
+   #+END_SRC
+** Use Trash
+   #+BEGIN_SRC emacs-lisp
+     (setq-default
+      delete-by-moving-to-trash 1)
+   #+END_SRC
+** GUI Setup
+   #+BEGIN_SRC emacs-lisp
+     (defun minimal-gui ()
+       (menu-bar-mode 0)
+       (blink-cursor-mode 0)
+       (if (fboundp #'scroll-bar-mode) (scroll-bar-mode 0))
+       (tool-bar-mode 0)
+       (tooltip-mode 0))
+     (when window-system (minimal-gui)) ;; when calling emacs directly (not emacsclient)
+     (add-hook 'after-make-frame-functions (lambda (_) (minimal-gui))) ;; _ arg is frame passed from hook
+
+   #+END_SRC
+** Alias y/n
+   #+BEGIN_SRC emacs-lisp
+     (defalias 'yes-or-no-p 'y-or-n-p)
+   #+END_SRC
+** Global UI Minor Modes
+   #+BEGIN_SRC emacs-lisp
+     (show-paren-mode t)
+     (global-prettify-symbols-mode 1)
+
+   #+END_SRC
+* Backups and autosaves
+** Backups
+   #+BEGIN_SRC emacs-lisp
+     (if dotemacs--enable-backups
+	 (setq-default
+	  backup-by-copying t
+	  version-control t
+	  kept-new-versions 5
+	  kept-old-versions 5
+	  delete-old-versions t
+	  backup-directory-alist `(("." . ,dotemacs--backups-directory)))
+       (setq-default
+	make-backup-files nil))
+
+   #+END_SRC
+** Autosaves
+   #+BEGIN_SRC emacs-lisp
+     (if dotemacs--auto-save-enabled
+	 (setq-default
+	  auto-save-list-file-prefix dotemacs--auto-save-list-file-prefix
+	  auto-save-file-name-transforms `((".*" ,dotemacs--auto-save-transforms t))
+	  auto-save-interval 100)
+       (setq-default
+	(setq-default auto-save-default nil)))
+
+   #+END_SRC
+* Dired
+  #+BEGIN_SRC emacs-lisp
+    (add-hook 'dired-load-hook (function (lambda () (load "dired-x"))))
+
+    (defcustom list-of-dired-switches
+      '(("-l" . "classic")
+	("-la" . "all")
+	("-lA" . "no . & ..")
+	("-lA --group-directories-first" . "directories first"))
+      "List of ls switches (together with a name to display in the mode-line) for dired to cycle among.")
+
+    (defun dotemacs--cycle-dired-switches ()
+      "Cycle through the list `list-of-dired-switches' of switches for ls"
+      (interactive)
+      (setq list-of-dired-switches
+	    (append (cdr list-of-dired-switches)
+		    (list (car list-of-dired-switches))))
+      (dired-sort-other (caar list-of-dired-switches))
+      (setq mode-name (concat "Dired " (cdar list-of-dired-switches)))
+      (force-mode-line-update))
+
+    (defun dotemacs--dired-mode-hook ()
+      (local-set-key (kbd "z") #'dotemacs--cycle-dired-switches))
+    (add-hook 'dired-mode-hook 'dotemacs--dired-mode-hook)
+
+
+  #+END_SRC
+* IDO
+  #+BEGIN_SRC emacs-lisp
+    (setq ido-save-directory-list-file dotemacs--ido-last)
+    ;;https://news.ycombinator.com/item?id=14879375
+    (setq ido-enable-flex-matching t)
+    (setq ido-everywhere t)
+    (setq ido-create-new-buffer 'always)
+    (progn
+      ;; ignoring
+      ;; https://emacs.stackexchange.com/questions/5491/setting-ido-ignore-buffers-doesnt-cause-buffers-to-be-ignored-wheres-the-er
+
+      ;; C-a in ido minibuffer to toggle ido showing hidden buffers, 
+
+      ;; to use a var instead of a custom:
+      ;;(defvar ido-dont-ignore-buffer-names '("*grep*" "*Messages*"))
+
+      (defcustom ido-dont-ignore-buffer-names
+        '(("*grep*" . "grep")
+          ("*Messages*" . "Messages"))
+        "List of buffers that ido shouldn't ignore")
+
+      (defun ido-ignore-most-star-buffers (name)
+        (and
+         (string-match-p "^*" name)
+         (not (member name ido-dont-ignore-buffer-names))))
+
+      (setq ido-ignore-buffers (list "\\` " #'ido-ignore-most-star-buffers)))
+
+    (ido-mode 1)
+
+
+  #+END_SRC
+* iBuffer
+  #+BEGIN_SRC emacs-lisp
+    (setq ibuffer-expert t)
+    (setq ibuffer-show-empty-filter-groups nil)
+    (setq ibuffer-saved-filter-groups
+          '(("home"
+             ("emacs-config" (or
+                              (filename . ".emacs.d")
+                              (filename . ".emacs")
+                              (filename . ".emacs-custom.el")))
+             ("org-files" (or
+                           (used-mode . org-agenda-mode)
+                           (used-mode . org-mode)))
+             ("star-files" (name . "^*"))
+             )))
+
+    (setq ibuffer-saved-filters
+          '(("hider"
+             ((not name . "^*")
+              (not used-mode . org-mode)))
+            ))
+
+
+  #+END_SRC
+** Filtering and Grouping by Directory
+   [[https://emacs.stackexchange.com/questions/10621/how-to-get-ibuffer-to-use-directory-tree-as-filter-groups][From StackExchange]] [[https://emacs.stackexchange.com/users/651/jpkotta][by jpkotta]]
+   #+BEGIN_SRC emacs-lisp
+     ;; ;; https://emacs.stackexchange.com/questions/10621/how-to-get-ibuffer-to-use-directory-tree-as-filter-groups
+
+     ;; (require 'cl)
+     ;; (define-ibuffer-sorter pathname
+     ;;   "Sort by pathname"
+     ;;   (:description "path")
+     ;;   (cl-flet ((get-pathname
+     ;; 	     (data)
+     ;; 	     (with-current-buffer (car data)
+     ;; 	       (or buffer-file-name
+     ;; 		   (if (eq major-mode 'dired-mode)
+     ;; 		       (expand-file-name dired-directory))
+     ;; 		   ;; so that all non pathnames are at the end
+     ;; 		   ""))))
+     ;;     (string< (get-pathname a) (get-pathname b))))
+
+     ;; (define-key ibuffer-mode-map
+     ;;   (kbd "s p") 'ibuffer-do-sort-by-pathname)
+
+     ;; (defun get-all-buffer-directories ()
+     ;;   "Return a list of all directories that have at least one
+     ;;        file being visited."
+     ;;   (interactive)
+     ;;   (let (l)
+     ;;     (dolist (e (sort (mapcar 'file-name-directory
+     ;; 			     (remove-if-not 'identity
+     ;; 					    (mapcar 'buffer-file-name
+     ;; 						    (buffer-list))))
+     ;; 		     'string<))
+     ;;       (unless (string= (car l) e)
+     ;; 	(setq l (cons e l))))
+     ;;     l))
+
+     ;; (define-ibuffer-filter dirname
+     ;;     "Toggle current view to buffers with in a directory DIRNAME."
+     ;;   (:description "directory name"
+     ;; 		:reader
+     ;; 		(intern
+     ;; 		 (completing-read "Filter by directory: "
+     ;; 				  (get-all-buffer-directories)
+     ;; 				  'identity
+     ;; 				  t nil nil nil nil)))
+     ;;   (string= qualifier
+     ;; 	   (and (buffer-file-name buf)
+     ;; 		(file-name-directory (buffer-file-name buf)))))
+
+     ;; (defun ibuffer-set-filter-groups-by-directory ()
+     ;;   "Set the current filter groups to filter by directory."
+     ;;   (interactive)
+     ;;   (setq ibuffer-filter-groups
+     ;; 	(mapcar (lambda (dir)
+     ;; 		  (cons (format "%s" dir) `((dirname . ,dir))))
+     ;; 		(get-all-buffer-directories)))
+     ;;   (ibuffer-update nil t))
+
+     ;; (define-key ibuffer-mode-map
+     ;;   (kbd "/ D") 'ibuffer-set-filter-groups-by-directory)
+     ;; (define-key ibuffer-mode-map
+     ;;   (kbd "/ d") 'ibuffer-filter-by-dirname)
+
+   #+END_SRC
+* Helper Functions
+  #+BEGIN_SRC emacs-lisp
+    (defun dotemacs--full-scratch ()
+      (interactive)
+      (switch-to-buffer "*scratch*")
+      (delete-other-windows))
+
+    (defun dotemacs-fix-html2 ()
+      "Keep this!!!"
+      (interactive)
+      (goto-char (point-min))
+      (while (re-search-forward "</\\(\[^>]+\\)>" nil :noerror) (replace-match (concat (match-string 0) "\n"))))
+
+    (defun dotemacs-fix-html ()
+      (interactive)
+      (goto-char (point-min))
+      (while (re-search-forward "><" nil :noerror) (replace-match ">\n<"))
+      (indent-region (point-min)(point-max)))
+
+    (defun dotemacs-fix-edn ()
+      (interactive)
+      (goto-char (point-min))
+      (while (re-search-forward "} {" nil :noerror) (replace-match "}\n{"))
+      (indent-region (point-min)(point-max)))
+
+    (defun dotemacs-spit (filename content)
+      (with-temp-file filename (insert content)))
+
+    (defun dotemacs-slurp (filename)
+      (with-temp-buffer (insert-file-contents filename) (buffer-string)))
+
+    (defun dotemacs-markdown-to-html (filename)
+      (shell-command-to-string (concat "Markdown.pl " filename)))
+
+    (defun dotemacs-test-buffer-interactive-input (buf-input)
+      (interactive "bSelect a buffer:")
+      (message "You selected buffer: %s. You probably wanted C-c K" buf-input))
+
+    (defun dotemacs--kill-open-buffers-except-those-start-with-space-and-messages ()
+      (interactive)
+      (defun dotemacs--kill-buffer (buffer-name)
+        (let ((dotemacs--buffer (get-buffer buffer-name)))
+          (if (buffer-modified-p dotemacs--buffer)
+              (if (y-or-n-p (format "%s is modified, kill anyway?" dotemacs--buffer))
+                  (kill-buffer dotemacs--buffer))
+            (kill-buffer dotemacs--buffer))))
+
+      (if (y-or-n-p "Really kill open buffers except *Messages* and those that start with space, prompting for each if modified?")
+          (mapc (lambda (b) (unless (equal " " (substring (buffer-name b) 0 1))
+                              (dotemacs--kill-buffer b)))
+                (delq (get-buffer "*Messages*") (buffer-list)))))
+
+    (defun dotemacs-empty-directory (dir)
+      "empty directory without deleting directory itself"
+      (if dir (mapcar (lambda (f) (delete-file f :TRASH))
+                      (file-expand-wildcards (expand-file-name "*" dir)))))
+
+    (defun dotemacs-empty-directory (dir)
+      "empty directory recursively without deleting directory itself"
+      (if dir (mapcar
+               (lambda (f)
+                 (if (file-directory-p f)
+                     (delete-directory f :recursive :trash)
+                   (delete-file f :trash)))
+               (file-expand-wildcards (expand-file-name "*" dir)))))
+
+    (defun dotemacs-deploy-file (source target-directory)
+      "Copies source file to target directory, creating parent directories and overwriting"
+      (unless (file-exists-p target-directory)
+        (make-directory target-directory))
+      (copy-file source target-directory :ok-if-exists))
+
+    (defun dotemacs-display-results (contents &optional mode)
+      (interactive)
+      (let ((results-buffer-name "*RESULTS*"))
+        (switch-to-buffer results-buffer-name)
+        (setq inhibit-read-only :yes)
+        (delete-region (point-min) (point-max))
+        (insert contents)
+        (if mode (funcall mode))
+        (indent-region (point-min) (point-max))
+        (goto-char (point-min))
+        (special-mode)
+        (delete-other-windows)))
+
+    (defun dotemacs-display-results-html (contents)
+      (interactive)
+      (let ((results-buffer-name "*RESULTS*"))
+        (switch-to-buffer results-buffer-name)
+        (setq inhibit-read-only :yes)
+        (delete-region (point-min) (point-max))
+        (insert contents)
+        (funcall 'html-mode)
+        (dotemacs-fix-html)
+        (indent-region (point-min) (point-max))
+        (goto-char (point-min))
+        (view-mode)
+        (delete-other-windows)))
+
+    (defun dotemacs-org-to-json (org-file format-string)
+      "Takes an org file of one level headings and creates a json object list with the heading and the content"
+      (interactive)
+      (require 'subr-x)
+      (defun display-element (element)
+        (let ((title (org-element-property :title element))
+              (begin (org-element-property :contents-begin element))
+              (end (org-element-property :contents-end element)))
+          (format format-string title (string-trim (buffer-substring begin end)))))
+
+      (with-temp-buffer
+        (insert-file-contents org-file)
+        (mapconcat
+         'concat
+         (org-element-map
+             (org-element-parse-buffer 'headline)
+             '(paragraph headline)
+           #'display-element)
+         ",\n")))
+
+    (defun zenburn-colors ()
+      (interactive)
+      (custom-set-faces
+
+       '(term-color-black ((t (:foreground "#3F3F3F" :background "#2B2B2B"))))
+       '(term-color-red ((t (:foreground "#AC7373" :background "#8C5353"))))
+       '(term-color-green ((t (:foreground "#7F9F7F" :background "#9FC59F"))))
+       '(term-color-yellow ((t (:foreground "#DFAF8F" :background "#9FC59F"))))
+       '(term-color-blue ((t (:foreground "#7CB8BB" :background "#4C7073"))))
+       '(term-color-magenta ((t (:foreground "#DC8CC3" :background "#CC9393"))))
+       '(term-color-cyan ((t (:foreground "#93E0E3" :background "#8CD0D3"))))
+       '(term-color-white ((t (:foreground "#DCDCCC" :background "#656555"))))
+
+       '(term-default-fg-color ((t (:inherit term-color-white))))
+       '(term-default-bg-color ((t (:inherit term-color-black))))
+
+       ))
+  #+END_SRC
+* Bookmarks
+  #+BEGIN_SRC emacs-lisp
+    (setq bookmark-default-file dotemacs--bookmark-default-file)
+  #+END_SRC
+* Customize
+  [[https://emacs.stackexchange.com/questions/102/advantages-of-setting-variables-with-setq-instead-of-custom-el/106#106][Some general notes about using customize]]
+** Custom File
+   #+BEGIN_SRC emacs-lisp
+     (setq custom-file dotemacs--custom-file)
+     (load custom-file 'noerror)
+
+   #+END_SRC
+* Packages
+
+  #+BEGIN_SRC emacs-lisp
+    (require 'package)
+    ;;(setq use-package-always-ensure t)
+    (setq package-enable-at-startup nil)
+    (add-to-list 'package-archives
+                 '("melpa" . "https://melpa.org/packages/"))
+
+    (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
+
+    (package-initialize)
+
+  #+END_SRC
+** Bootstrap use-package
+   #+BEGIN_SRC emacs-lisp
+     ;; Bootstrap `use-package'
+     (unless (package-installed-p 'use-package)
+       (package-refresh-contents)
+       (package-install 'use-package))
+
+     (eval-when-compile
+       (require 'use-package))
+   #+END_SRC
+* Local Packages
+  Local packages not in elpa/melpa package repos
+  #+BEGIN_SRC emacs-lisp
+    ;;(add-to-list 'load-path dotemacs--localpackages-directory)
+    (if (file-directory-p dotemacs--localpackages-directory)
+        (let ((default-directory dotemacs--localpackages-directory))
+          (normal-top-level-add-subdirs-to-load-path)))
+  #+END_SRC
+** Bookmark+
+   Make emacs bookmarks useful. Clone the repo into .emacs.d/lisp
+   https://github.com/emacsmirror/bookmark-plus/
+   #+BEGIN_SRC emacs-lisp
+     (require 'bookmark+)
+   #+END_SRC
+** Aggressive Indent Mode
+   From melpa which has a more current version than elpa
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package aggressive-indent
+       :ensure t
+       :config
+       (add-hook 'emacs-lisp-mode-hook 'aggressive-indent-mode))
+
+
+   #+END_SRC
+** Company Mode
+   Complete Any
+   #+BEGIN_SRC emacs-lisp
+     (use-package company
+       :ensure t
+       :config
+       (add-hook 'after-init-hook 'global-company-mode))
+   #+END_SRC
+** On-Screen Mode
+   https://elpa.gnu.org/packages/on-screen.html
+   #+BEGIN_SRC emacs-lisp
+     (use-package on-screen
+       :ensure t
+       :config
+       (on-screen-global-mode +1)
+       (add-hook 'Info-mode-hook 'on-screen-mode))
+   #+END_SRC
+** seq - Functions for manipulating sequences
+   https://elpa.gnu.org/packages/seq.html
+   #+BEGIN_SRC emacs-lisp
+     (use-package seq
+       :ensure t)
+   #+END_SRC
+** which-key
+   https://github.com/justbur/emacs-which-key
+   #+BEGIN_SRC emacs-lisp
+     (use-package which-key
+       :ensure t
+       :config
+       (which-key-mode))
+   #+END_SRC
+** Windresize
+   https://elpa.gnu.org/packages/windresize.html
+   M-x windresize
+   #+BEGIN_SRC emacs-lisp
+     (use-package windresize
+       :ensure t)
+   #+END_SRC
+* Org Mode
+** Org Mode Initialize
+   #+BEGIN_SRC emacs-lisp
+     (require 'org) ;; This is needed to create org-structure-template-alist
+
+   #+END_SRC
+
+** Org Templates
+   https://blog.aaronbieber.com/2016/11/23/creating-org-mode-structure-templates.html
+
+   #+BEGIN_SRC emacs-lisp
+     (mapcar (lambda (x) (add-to-list 'org-structure-template-alist x))
+             (list
+              (list "se" (concat "#+BEGIN_SRC emacs-lisp\n"
+                                 "?\n"
+                                 "#+END_SRC"))
+              (list "ss" (concat "#+BEGIN_SRC sh\n"
+                                 "?\n"
+                                 "#+END_SRC"))
+              (list "p" (concat ":PROPERTIES:\n"
+                                "?\n"
+                                ":END:"))
+              (list "eh" (concat ":EXPORT_FILE_NAME: ?\n"
+                                 ":EXPORT_TITLE:\n"
+                                 ":EXPORT_OPTIONS: toc:nil html-postamble:nil num:nil"))))
+
+   #+END_SRC
+
+** Org Mode Babel open source buffer in current window (C-c ')
+   #+BEGIN_SRC emacs-lisp
+     (setq org-src-window-setup 'current-window)
+   #+END_SRC
+
+** Org Bullets
+   Cool looking bullet points for org mode
+   #+BEGIN_SRC emacs-lisp
+     (use-package org-bullets
+       :ensure t
+       :config
+       (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+   #+END_SRC
+
+* Autcomplete
+  #+BEGIN_SRC emacs-lisp
+    (use-package auto-complete
+      :ensure t)
+  #+END_SRC
+* Web Mode
+  good support for mixed languages in web pages
+  #+BEGIN_SRC emacs-lisp
+    (use-package web-mode
+      :ensure t
+      :config
+      (setq web-mode-markup-indent-offset 2)
+      (setq web-mode-css-indent-offset 2)
+      (setq web-mode-code-indent-offset 2)
+      (setq web-mode-attr-indent-offset 2)
+      (add-to-list 'auto-mode-alist '("\\.html\\'" . web-mode))
+      (add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
+      (add-to-list 'auto-mode-alist '("\\.ejs\\'" . web-mode))
+      (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode)))
+
+  #+END_SRC
+
+* CSS Mode
+  #+BEGIN_SRC emacs-lisp
+    (use-package css-mode
+      :ensure t
+      :config
+      (setq css-indent-offset 2))
+      
+  #+END_SRC
+* Yaml Mode
+  #+BEGIN_SRC emacs-lisp
+    (use-package yaml-mode
+      :ensure t
+      :mode ("\\.yml\\'" . yaml-mode))
+  #+END_SRC
+
+* RJSX Mode
+  Good support for JSX used in React
+  #+BEGIN_SRC emacs-lisp
+    (use-package rjsx-mode
+      :ensure t
+      :config
+      (setq js2-basic-offset 2)
+      (add-to-list 'auto-mode-alist '("\\.js\\'" . rjsx-mode)))
+  #+END_SRC
+
+* JSON Mode
+  #+BEGIN_SRC emacs-lisp
+    (use-package json-mode
+      :ensure t)
+  #+END_SRC
+
+* NPM Mode
+  Run npm scripts from emacs
+  #+BEGIN_SRC emacs-lisp
+    (use-package npm-mode
+      :ensure t)
+  #+END_SRC
+
+* Magit
+  Excellent git support for emacs
+  #+BEGIN_SRC emacs-lisp
+    (use-package magit
+      :ensure t
+      :commands magit-status)
+
+  #+END_SRC
+
+* Markdown
+  #+BEGIN_SRC emacs-lisp
+    (use-package markdown-mode
+      :ensure t
+      :commands (markdown-mode))
+
+  #+END_SRC
+
+* Smart Parens
+  #+BEGIN_SRC emacs-lisp
+    (use-package smartparens
+      :ensure t)
+  #+END_SRC
+
+* Clojure
+
+** Clojure Mode
+   #+BEGIN_SRC emacs-lisp
+     (use-package clojure-mode
+       :ensure t)
+
+   #+END_SRC
+** Cider Mode
+   #+BEGIN_SRC emacs-lisp
+     (use-package cider
+       :ensure t)
+
+   #+END_SRC
+* Global Keybindings
+  #+BEGIN_SRC emacs-lisp
+    (global-set-key (kbd "C-x C-b") #'ibuffer)
+    (global-set-key (kbd "C-.") #'next-buffer)
+    (global-set-key (kbd "C-,") #'previous-buffer)
+    (global-set-key (kbd "C-;") #'delete-other-windows)
+
+    (global-set-key (kbd "C-c s") #'dotemacs--full-scratch)
+    (global-set-key (kbd "C-c q") #'comment-or-uncomment-region)
+    (global-set-key (kbd "C-c e") #'eval-buffer)
+    (global-set-key (kbd "C-c k") #'my/test-buffer-interactive-input)
+    (global-set-key (kbd "C-c K") #'my/kill-open-buffers-except-those-start-with-space-and-messages)
+    (global-set-key (kbd "C-c m") #'bookmark-bmenu-list)
+    (global-set-key (kbd "C-c r") #'append-to-register)
+
+  #+END_SRC
+* Skeletons
+*** Emacs
+    #+BEGIN_SRC emacs-lisp
+      (define-skeleton skl-elisp-function-interactive
+	  "ECMAScript function"
+	"Make an Emacs Lisp interactive function:"
+	> "(defun " (skeleton-read "Function name: ") " (" (skeleton-read "Parameters: ") ")" " \n"
+	> "(interactive)" "\n"
+	> _ "\n"
+	> ")\n")
+
+      (define-skeleton skl-elisp-mapc
+	  "Emacs List mapc"
+	"Make an Emacs Lisp mapc construct"
+	> "(mapc"
+	> " (lambda (" (skeleton-read "Parameter:") ") "
+	> _ ")"
+	> " " (skeleton-read "List: ") ")"
+	)
+      #+END_SRC
+*** Javascript
+    #+BEGIN_SRC emacs-lisp
+      (define-skeleton skl-js-function
+	  "ECMAScript function"
+	"Make a javascript function:"
+	> "function " (skeleton-read "Function name: ") "(" (skeleton-read "Parameters: ") ")" " {\n"
+	> _ "\n"
+	"}\n")
+
+      (define-skeleton skl-js-function-fatarrow
+	  "ECMAScript Fat Arrow Function"
+	"Make a javascript fat arrow function:"
+	> "(" (skeleton-read "Parameters: ") ")" " => " "{" "\n"
+	> _ "\n"
+	"}\n")
+
+      (define-skeleton skl-js-for
+	  "ECMAScript for loop"
+	"Make a javascript for loop:"
+	> "for(let i = 0; " "i < " (skeleton-read "Array to loop: ") ".length; " "i++) " "{\n"
+	> _ "\n"
+	"}\n")
+
+      (define-skeleton skl-js-package
+	  "Javascript package file"
+	"Make a javascript package file"
+	> "const " (skeleton-read "Package name:") " = (function() {" "\n"
+	> "\"use strict\";" "\n"
+	> "return {" "\n"
+	> _ "\n"
+	"  };" "\n"
+	"})();" "\n")
+
+      (define-skeleton skl-js-package-function
+	  "Javascript function in package style"
+	"Make a javascript package function"
+	> (skeleton-read "Function name: ") ": function(" (skeleton-read "Parameters: ") ") {" "\n"
+	> _ "\n"
+	"    }," "\n")
+
+      (define-skeleton skl-js-consolelog
+	  "ECMAScript console.log();"
+	"Write log function:"
+	> "console.log(" _ ");" "\n")
+    #+END_SRC
+*** HTML
+    #+BEGIN_SRC emacs-lisp
+      (define-skeleton skl-html-dev
+	  "HTML5 App Template"
+	"<!DOCTYPE html>"
+	"<html>" "\n"
+	"  <head>" "\n"
+	"    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">" "\n"
+	"    <meta charset=\"utf-8\">" "\n"
+	"    <style>" "\n"
+	"    </style>" "\n"
+	"  </head>" "\n"
+	"  <body>" "\n"
+	"    <script>" "\n"
+	"     window.onload = function() {" "\n"
+	"     }" "\n"
+	"    </script>" "\n"
+	"  </body>" "\n"
+	"</html>" "\n")
+
+      (define-skeleton skl-html-dev2
+	  "HTML5 App Template"
+	"<!DOCTYPE html>"
+	"<html>" "\n"
+	"    <head>" "\n"
+	"	<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">" "\n"
+	"	<link rel=\"stylesheet\" href=\"https://unpkg.com/purecss@1.0.0/build/pure-min.css\">" "\n"
+	"    </head>" "\n"
+	"    <body>" "\n"
+	"	<div id=\"app\"></div>" "\n"
+	"	<script src=\"app.js\"></script>" "\n"
+	"	<script>" "\n"
+	"	 window.onload = function() {" "\n"
+	"	 }" "\n"
+	"	</script>" "\n"
+	"    </body>" "\n"
+	"</html>" "\n")
+
+      (define-skeleton skl-html-script-tag
+	  "HTML5 Script Tag Template"
+	> "     <script src=\"" (skeleton-read "Javascript File Name: ") ".js\"></script>")
+
+      (define-skeleton skl-html-css-include
+	  "HTML5 Include CSS File Template"
+	> "	<link href=\"" (skeleton-read "CSS File Name: ") ".css\" rel=\"stylesheet\" type=\"text/css\">")
+    #+END_SRC
+* Abbrev
+** Abbrev initialization
+   #+BEGIN_SRC emacs-lisp
+     (setq abbrev-file-name dotemacs--abbrev-file-name)
+     (setq-default abbrev-mode t)
+     (if (file-exists-p abbrev-file-name)
+         (quietly-read-abbrev-file))
+     ;;(setq default-abbrev-mode t)
+     (customize-set-variable 'save-abbrevs 'silently)
+   #+END_SRC
+
+** Abbrev Definitions for modes
+    #+BEGIN_SRC emacs-lisp
+      (unless (boundp 'js-mode-abbrev-table) (define-abbrev-table 'js-mode-abbrev-table '()))
+      (define-abbrev js-mode-abbrev-table "jff" "" #'skl-js-function)
+      (define-abbrev js-mode-abbrev-table "jfa" "" #'skl-js-function-fatarrow)
+      (define-abbrev js-mode-abbrev-table "jfo" "" #'skl-js-for)
+      (define-abbrev js-mode-abbrev-table "jpa" "" #'skl-js-package)
+      (define-abbrev js-mode-abbrev-table "jpf" "" #'skl-js-package-function)
+      (define-abbrev js-mode-abbrev-table "cl" "" #'skl-js-consolelog)
+
+      (unless (boundp 'web-mode-abbrev-table) (define-abbrev-table 'web-mode-abbrev-table '()))
+      (define-abbrev web-mode-abbrev-table "hh" "" #'skl-html-dev)
+      (define-abbrev web-mode-abbrev-table "hs" "" #'skl-html-script-tag)
+      (define-abbrev web-mode-abbrev-table "hc" "" #'skl-html-css-include)
+
+      ;; Modes that have abbrev tables pre-defined
+      ;; Emacs Lisp
+      (define-abbrev emacs-lisp-mode-abbrev-table "ff" "" #'skl-elisp-function-interactive)
+      (define-abbrev emacs-lisp-mode-abbrev-table "fc" "" #'skl-elisp-mapc)
+
+    #+END_SRC
+* Maximize frame
+  #+BEGIN_SRC emacs-lisp
+    (add-to-list 'initial-frame-alist '(fullscreen . maximized))
+    ;;(add-to-list 'default-frame-alist '(fullscreen . fullheight))
+    (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  #+END_SRC
