@@ -38,6 +38,8 @@
     (setq-default major-mode 'org-mode)
     (defalias 'yes-or-no-p 'y-or-n-p)
 
+    (put 'narrow-to-region 'disabled nil)
+
     (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
     (load custom-file 'noerror)
 
