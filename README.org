@@ -27,6 +27,8 @@
     https://github.com/jwiegley/use-package/issues/219
 *** Bookmark+
     https://github.com/emacsmirror/bookmark-plus/
+*** Automatically adding links
+    https://writequit.org/articles/emacs-org-mode-generate-ids.html#the-solution
 ** Configuration
    #+BEGIN_SRC emacs-lisp :tangle /tmp/dot-emacs.el :noweb yes
      (progn
