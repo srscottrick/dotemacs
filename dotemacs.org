@@ -1,3 +1,15 @@
+
+* Table of Contents                                                   :TOC_3:
+- [[#minimal][Minimal]]
+- [[#dired][Dired]]
+- [[#ido][IDO]]
+- [[#ibuffer][iBuffer]]
+- [[#functions][Functions]]
+- [[#skeletons][Skeletons]]
+- [[#global-keybindings][Global Keybindings]]
+- [[#packages][Packages]]
+- [[#noweb-output][NoWeb Output]]
+
 * Minimal
   #+NAME: minimal-config
   #+BEGIN_SRC emacs-lisp
