@@ -38,6 +38,9 @@
     :header-args: :noweb-ref strategy-one
     :END:
 **** Backups
+     :PROPERTIES:
+     :CUSTOM_ID: backups
+     :END:
      [[help:make-backup-files][make-backup-files]]
      #+BEGIN_SRC emacs-lisp :comments org
        (setq make-backup-files nil)
