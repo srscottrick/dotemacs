@@ -1,8 +1,65 @@
-* Emacs Client Scripts
-  Emacs Client scripts (ec/et/es) from: [[http://mjwall.com/blog/2013/10/04/how-i-use-emacs/][mjwall]] ([[https://github.com/mjwall/dotfiles/blob/master/bin/][github]])
-* List of good dotemacs files
-  https://github.com/eastwood/config/blob/master/emacs.d/org-init.org
-* Some use-package info
-  https://github.com/jwiegley/use-package/issues/219
-* Bookmark+
-  https://github.com/emacsmirror/bookmark-plus/
+* Dot Emacs
+** Table of Contents                                               :TOC_5_gh:
+- [[#dot-emacs][Dot Emacs]]
+  - [[#table-of-contents-package][Table of Contents Package]]
+  - [[#references][References]]
+    - [[#emacs-client-scripts][Emacs Client Scripts]]
+    - [[#list-of-good-dotemacs-files][List of good dotemacs files]]
+    - [[#some-use-package-info][Some use-package info]]
+    - [[#bookmark][Bookmark+]]
+  - [[#configuration][Configuration]]
+    - [[#basic-set-up][Basic Set up]]
+      - [[#backups][Backups]]
+      - [[#delete-moves-to-trash][Delete Moves To Trash]]
+      - [[#auto-save-default][Auto Save Default]]
+      - [[#no-scratch-buffer-message][No Scratch Buffer Message]]
+      - [[#inhibit-startup-screen][Inhibit Startup Screen]]
+
+** Table of Contents Package
+   OrgMode Table of Contents Package
+   https://github.com/snosov1/toc-org
+** References
+*** Emacs Client Scripts
+    Emacs Client scripts (ec/et/es) from: [[http://mjwall.com/blog/2013/10/04/how-i-use-emacs/][mjwall]] ([[https://github.com/mjwall/dotfiles/blob/master/bin/][github]])
+*** List of good dotemacs files
+    https://github.com/eastwood/config/blob/master/emacs.d/org-init.org
+*** Some use-package info
+    https://github.com/jwiegley/use-package/issues/219
+*** Bookmark+
+    https://github.com/emacsmirror/bookmark-plus/
+** Configuration
+   #+BEGIN_SRC emacs-lisp :tangle /tmp/dot-emacs.el :noweb yes
+     (progn
+       <<strategy-one>>)
+
+   #+END_SRC
+*** Basic Set up
+    :PROPERTIES:
+    :header-args: :noweb-ref strategy-one
+    :END:
+**** Backups
+     [[help:make-backup-files][make-backup-files]]
+     #+BEGIN_SRC emacs-lisp :comments org
+       (setq make-backup-files nil)
+     #+END_SRC
+**** Delete Moves To Trash
+     [[help:delete-by-moving-to-trash][delete-by-moving-to-trash]]
+     #+BEGIN_SRC emacs-lisp
+       (setq delete-by-moving-to-trash 1)
+     #+END_SRC
+**** Auto Save Default
+     [[help:auto-save-default][auto-save-default]]
+     #+BEGIN_SRC emacs-lisp
+       (setq auto-save-default nil)
+     #+END_SRC
+**** No Scratch Buffer Message
+     [[help:initial-scratch-message][initial-scratch-message]]
+     #+BEGIN_SRC emacs-lisp
+       (setq initial-scratch-message nil)
+     #+END_SRC
+**** Inhibit Startup Screen
+     [[help:inhibit-startup-screen][inhibit-startup-screen]]
+     [[help:inhibit-splash-screen][inhibit-splash-screen]] is an alias for [[help:inhibit-startup-screen][inhibit-startup-screen]]
+     #+BEGIN_SRC emacs-lisp
+       (setq inhibit-startup-screen t)
+     #+END_SRC
