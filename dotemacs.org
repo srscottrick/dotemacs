@@ -146,9 +146,29 @@
 
     (defun dotemacs-fix-html ()
       (interactive)
-      (goto-char (point-min))
-      (while (re-search-forward "><" nil :noerror) (replace-match ">\n<"))
-      (indent-region (point-min)(point-max)))
+      ;;(goto-char (point-min))
+      ;;(while (re-search-forward "><" nil :noerror) (replace-match ">\n<"))
+      ;;(indent-region (point-min)(point-max))
+      (message "Try sgml-pretty-print or use dotemacs-jta-reformat-xml"))
+
+    (defun dotemacs-jta-reformat-xml ()
+      "Reformats xml to make it readable (respects current selection).
+    https://stackoverflow.com/questions/137043/can-emacs-re-indent-a-big-blob-of-html-for-me"
+      (interactive)
+      (save-excursion
+        (let ((beg (point-min))
+              (end (point-max)))
+          (if (and mark-active transient-mark-mode)
+              (progn
+                (setq beg (min (point) (mark)))
+                (setq end (max (point) (mark))))
+            (widen))
+          (setq end (copy-marker end t))
+          (goto-char beg)
+          (while (re-search-forward ">\\s-*<" end t)
+            (replace-match ">\n<" t t))
+          (goto-char beg)
+          (indent-region beg end nil))))
 
     (defun dotemacs-display-results-html (contents)
       (interactive)
@@ -193,19 +213,34 @@
   #+BEGIN_SRC emacs-lisp
     (define-skeleton dotemacs--skel-html-1
       "HTML5 App Template"
-      > "<!DOCTYPE html>" "\n"
-      > "<html>" "\n"
-      > "<head>" "\n"
-      > "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">" "\n"
-      > "<meta charset=\"utf-8\">" "\n"
-      > "<style>" "\n"
-      > "</style>" "\n"
-      > "<script>" "\n"
-      > "</script>" "\n"
-      > "</head>" "\n"
-      > "<body>" "\n"
-      > "</body>" "\n"
-      > "</html>" "\n")
+      >  "<!DOCTYPE html>" \n
+      >  "<html>" \n
+      >  "<head>" \n
+      >  "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">" \n
+      >  "<meta charset=\"utf-8\">" \n
+      >  "<style>" \n
+      -2 "</style>" \n
+      >  "<script>" \n
+      -2 "</script>" \n
+      -2 "</head>" \n
+      >  "<body>" \n
+      -2 "</body>" \n
+      -2 "</html>"
+      >  \n)
+
+    (define-skeleton dotemacs--skel-html-2
+      "HTML5 App Template"
+      >  "<!DOCTYPE html>" \n
+      >  "<html>" \n
+      >  "<head>" \n
+      >  "<meta charset=\"utf-8\">" \n
+      >  "<script>" \n
+      -2 "</script>" \n
+      -2 "</head>" \n
+      >  "<body>" \n
+      -2 "</body>" \n
+      >  "</html>"
+      >  \n)
 
   #+END_SRC
 * Global Keybindings
