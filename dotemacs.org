@@ -1,15 +1,3 @@
-
-* Table of Contents                                                   :TOC_3:
-- [[#minimal][Minimal]]
-- [[#dired][Dired]]
-- [[#ido][IDO]]
-- [[#ibuffer][iBuffer]]
-- [[#functions][Functions]]
-- [[#skeletons][Skeletons]]
-- [[#global-keybindings][Global Keybindings]]
-- [[#packages][Packages]]
-- [[#noweb-output][NoWeb Output]]
-
 * Minimal
   #+NAME: minimal-config
   #+BEGIN_SRC emacs-lisp
@@ -232,6 +220,12 @@
     (global-set-key (kbd "C-c a") #'org-agenda)
 
   #+END_SRC
+* Built In Modes
+** js-mode
+   #+NAME: js-mode-config
+   #+BEGIN_SRC emacs-lisp
+     (setq-default js-indent-level 2)
+   #+END_SRC
 * Packages
   Packages Configuration
   #+NAME: packages-config
@@ -250,5 +244,6 @@
     <<functions-definitions>>
     <<skeletons-definitions>>
     <<global-keybindings>>
+    <<js-mode-config>>
     <<packages-config>>
   #+END_SRC
