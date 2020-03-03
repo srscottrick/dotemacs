@@ -181,10 +181,11 @@
                  (find-alternate-file (concat "/sudo::" file-name))
                  (goto-char p)))
 
-    (defun dotemacs--fix-mhtml-mode ()
-      "sets sgml-quick-keys to 'close"
-      (interactive)
-      (setq sgml-quick-keys 'close))
+    ;; don't need this, setq-default sgml-quick-key to 'close
+    ;; (defun dotemacs--fix-mhtml-mode ()
+    ;;   "sets sgml-quick-keys to 'close"
+    ;;   (interactive)
+    ;;   (setq sgml-quick-keys 'close))
 
   #+END_SRC
 * Skeletons
@@ -222,9 +223,18 @@
   #+END_SRC
 * Built In Modes
 ** js-mode
+   Set indent level to 2 from 4
    #+NAME: js-mode-config
    #+BEGIN_SRC emacs-lisp
      (setq-default js-indent-level 2)
+   #+END_SRC
+** mhtml-mode
+   configure mhtml-mode so tags are closed immediately after typeing "</"
+   this relies on the buffer-local variable 'sgml-quick-keys' being set to 'close
+   so use setq-default so new buffers will set the buffer-local variable correctly
+   #+NAME: mhtml-mode-config
+   #+BEGIN_SRC emacs-lisp
+     (setq-default sgml-quick-keys 'close)
    #+END_SRC
 * Packages
   Packages Configuration
@@ -245,5 +255,6 @@
     <<skeletons-definitions>>
     <<global-keybindings>>
     <<js-mode-config>>
+    <<mhtml-mode-config>>
     <<packages-config>>
   #+END_SRC
