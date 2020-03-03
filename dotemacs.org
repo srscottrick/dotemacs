@@ -265,11 +265,12 @@
    #+END_SRC
 ** mhtml-mode
    configure mhtml-mode so tags are closed immediately after typeing "</"
-   this relies on the buffer-local variable 'sgml-quick-keys' being set to 'close
-   so use setq-default so new buffers will set the buffer-local variable correctly
+   setting 'sgml-quick-keys' to 'close before loading mhtml or using setq-default
+   causes other behavior
+   but setting to 'close as a hook (mhtml-mode-hook) works
    #+NAME: mhtml-mode-config
    #+BEGIN_SRC emacs-lisp
-     (setq-default sgml-quick-keys 'close)
+     (add-hook 'mhtml-mode-hook (lambda () (setq sgml-quick-keys 'close)))
    #+END_SRC
 * Packages
   Packages Configuration
