@@ -1,0 +1,89 @@
+*** Basic Set up
+    :PROPERTIES:
+    :header-args: :noweb-ref strategy-one
+    :END:
+**** Backups
+     :PROPERTIES:
+     :CUSTOM_ID: backups
+     :END:
+     [[help:make-backup-files][make-backup-files]]
+     #+BEGIN_SRC emacs-lisp :comments org
+       (setq make-backup-files nil)
+     #+END_SRC
+**** Delete Moves To Trash
+     [[help:delete-by-moving-to-trash][delete-by-moving-to-trash]]
+     #+BEGIN_SRC emacs-lisp
+       (setq delete-by-moving-to-trash 1)
+     #+END_SRC
+**** Auto Save Default
+     [[help:auto-save-default][auto-save-default]]
+     #+BEGIN_SRC emacs-lisp
+       (setq auto-save-default nil)
+     #+END_SRC
+**** Display
+***** No Scratch Buffer Message
+      [[help:initial-scratch-message][initial-scratch-message]]
+      #+BEGIN_SRC emacs-lisp
+        (setq initial-scratch-message nil)
+      #+END_SRC
+***** Inhibit Startup Screen
+      [[help:inhibit-startup-screen][inhibit-startup-screen]]
+      [[help:inhibit-splash-screen][inhibit-splash-screen]] is an alias for [[help:inhibit-startup-screen][inhibit-startup-screen]]
+      #+BEGIN_SRC emacs-lisp
+        (setq inhibit-startup-screen t)
+      #+END_SRC
+***** Bell
+      Flash mode line instead of beeping
+      [[help:visible-bell][visible-bell]]
+      [[help:ring-bell-function][ring-bell-function]]
+      [[https://www.emacswiki.org/emacs/AlarmBell][EmacsWiki: AlarmBell]]
+
+      #+BEGIN_SRC emacs-lisp
+        (setq visible-bell nil)
+        (setq ring-bell-function 'dotemacs--flash-mode-line)
+        (defun dotemacs--flash-mode-line ()
+          (invert-face 'mode-line)
+          (run-with-timer 0.1 nil #'invert-face 'mode-line))
+      #+END_SRC
+***** Confirm To Kill Emacs
+      [[help:confirm-kill-emacs][confirm-kill-emacs]]
+      #+BEGIN_SRC emacs-lisp
+        (setq confirm-kill-emacs 'yes-or-no-p)
+      #+END_SRC
+***** No bars
+      [[help:menu-bar-mode][menu-bar-mode]]
+      [[help:tool-bar-mode][tool-bar-mode]]
+      [[scroll-bar-mode][scroll-bar-mode]]
+      #+BEGIN_SRC emacs-lisp
+        (when (fboundp 'menu-bar-mode) (menu-bar-mode -1))
+        (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+        (when (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+      #+END_SRC
+***** Blink Cursor
+      [[help:blink-cursor-mode][blink-cursor-mode]]
+      #+BEGIN_SRC emacs-lisp
+        (when (fboundp 'blink-cursor-mode) (blink-cursor-mode 0))
+      #+END_SRC
+***** Tooltip Mode
+      [[help:tooltip-mode][tooltip-mode]]
+      #+BEGIN_SRC emacs-lisp
+        (when (fboundp 'tooltip-mode) (tooltip-mode 0))
+      #+END_SRC
+***** Show Parentheses
+      [[help:show-paren-mode][show-paren-mode]]
+      #+BEGIN_SRC emacs-lisp
+        (show-paren-mode t)
+      #+END_SRC
+***** Prettify Symbols
+      https://github.com/WolfeCub/dotfiles/tree/master/emacs/.emacs.d
+      
+      [[help:inhibit-compacting-font-caches][inhibit-compacting-font-caches]] - needed to prevent slowing when displaying symbols on Win32
+      [[help:prettify-symbols-unprettify-at-point][prettify-symbols-unprettify-at-point]] - show characters underlying pretty symbols when point is at right edge
+      [[help:global-prettify-symbols-mode][global-prettify-symbols-mode]]
+
+      #+BEGIN_SRC emacs-lisp
+        (setq prettify-symbols-unprettify-at-point 'right-edge)
+        (setq inhibit-compacting-font-caches t)
+        (global-prettify-symbols-mode 1)
+
+      #+END_SRC

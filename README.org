@@ -30,7 +30,7 @@
 *** Automatically adding links
     https://writequit.org/articles/emacs-org-mode-generate-ids.html#the-solution
 ** Configuration
-   #+BEGIN_SRC emacs-lisp :tangle /tmp/dot-emacs.el :noweb yes
+   #+BEGIN_SRC emacs-lisp :tangle C:/gohome/temp/dot-emacs.el :noweb yes
      (progn
        <<strategy-one>>)
 
@@ -39,6 +39,7 @@
     :PROPERTIES:
     :header-args: :noweb-ref strategy-one
     :END:
+
 **** Backups
      :PROPERTIES:
      :CUSTOM_ID: backups
@@ -68,3 +69,8 @@
      #+BEGIN_SRC emacs-lisp
        (setq inhibit-startup-screen t)
      #+END_SRC
+**** Visible Bell (No Sound)
+     [[help:visible-bell][visible-bell]]
+     Flash screen instead of beeping
+     
+     

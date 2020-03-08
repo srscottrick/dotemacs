@@ -254,6 +254,7 @@
     (global-set-key (kbd "C-c r") #'dotemacs--revert-buffer-noconfirm)
     (global-set-key (kbd "C-c t") #'org-capture)
     (global-set-key (kbd "C-c a") #'org-agenda)
+    (global-set-key (kbd "C-c l") #'org-store-link)
 
   #+END_SRC
 * Built In Modes
@@ -272,6 +273,49 @@
    #+BEGIN_SRC emacs-lisp
      (add-hook 'mhtml-mode-hook (lambda () (setq sgml-quick-keys 'close)))
    #+END_SRC
+* Org Mode
+** Org Mode Initialize
+   #+BEGIN_SRC emacs-lisp
+     (require 'org) ;; This is needed to create org-structure-template-alist
+
+   #+END_SRC
+
+** Org Templates
+   https://blog.aaronbieber.com/2016/11/23/creating-org-mode-structure-templates.html
+
+   #+BEGIN_SRC emacs-lisp
+     (mapcar (lambda (x) (add-to-list 'org-structure-template-alist x))
+             (list
+              (list "se" (concat "#+BEGIN_SRC emacs-lisp\n"
+                                 "?\n"
+                                 "#+END_SRC"))
+              (list "ss" (concat "#+BEGIN_SRC sh\n"
+                                 "?\n"
+                                 "#+END_SRC"))
+              (list "p" (concat ":PROPERTIES:\n"
+                                "?\n"
+                                ":END:"))
+              (list "eh" (concat ":EXPORT_FILE_NAME: ?\n"
+                                 ":EXPORT_TITLE:\n"
+                                 ":EXPORT_OPTIONS: toc:nil html-postamble:nil num:nil"))))
+
+   #+END_SRC
+
+** Org Mode Babel open source buffer in current window (C-c ')
+   #+BEGIN_SRC emacs-lisp
+     (setq org-src-window-setup 'current-window)
+   #+END_SRC
+
+** Org Bullets
+   Cool looking bullet points for org mode
+   #+BEGIN_SRC emacs-lisp
+     (use-package org-bullets
+       :ensure t
+       :config
+       (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+   #+END_SRC
+
+
 * Packages
   Packages Configuration
   #+NAME: packages-config
