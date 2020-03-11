@@ -257,6 +257,14 @@
     (global-set-key (kbd "C-c l") #'org-store-link)
 
   #+END_SRC
+* Programming/Tab Widths
+  Tab widths: https://www.emacswiki.org/emacs/IndentationBasics
+  #+NAME: programming-tab-width
+  #+BEGIN_SRC emacs-lisp
+    (setq tab-width 2) ; or any other preferred value
+    (defvaralias 'c-basic-offset 'tab-width)
+    (defvaralias 'cperl-indent-level 'tab-width)
+  #+END_SRC
 * Built In Modes
 ** js-mode
    Set indent level to 2 from 4
@@ -272,6 +280,12 @@
    #+NAME: mhtml-mode-config
    #+BEGIN_SRC emacs-lisp
      (add-hook 'mhtml-mode-hook (lambda () (setq sgml-quick-keys 'close)))
+   #+END_SRC
+** java-mode
+   Set indent level to 2 from 4
+   #+NAME: java-mode-config
+   #+BEGIN_SRC emacs-lisp
+     (add-hook 'java-mode-hook (lambda () (setq c-basic-offset 2)))
    #+END_SRC
 * Org Mode
 ** Org Mode Initialize
@@ -334,7 +348,9 @@
     <<functions-definitions>>
     <<skeletons-definitions>>
     <<global-keybindings>>
+    <<programming-tab-width>>
     <<js-mode-config>>
     <<mhtml-mode-config>>
+    <<java-mode-config>>
     <<packages-config>>
   #+END_SRC
