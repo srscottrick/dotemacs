@@ -49,7 +49,7 @@
 * Dired
   #+NAME: dired-config
   #+BEGIN_SRC emacs-lisp
-    (add-hook 'dired-load-hook (function (lambda () (load "dired-x"))))
+    ;;(add-hook 'dired-load-hook (function (lambda () (load "dired-x"))))
 
     (defcustom list-of-dired-switches
       '(("-l" . "classic")
@@ -72,7 +72,26 @@
       (local-set-key (kbd "z") #'dotemacs--cycle-dired-switches))
     (add-hook 'dired-mode-hook 'dotemacs--dired-mode-hook)
 
+
   #+END_SRC
+** Dired Subdirectory Advice
+   https://old.reddit.com/r/emacs/comments/fs93hk/weekly_tipstricketc_thread/
+   I really like dired-subtree.el, but I don't like that when you try to visit a new file or run a command thinking default-directory will be relative to where the point is at, but it's still the toplevel directory the dired buffer is visiting. This little advice makes sure that default-directory is the parent directory of the file or directory under point:
+  #+NAME: dired-config-subs
+  #+BEGIN_SRC emacs-lisp
+    (defun gk-dired-update-default-directory-from-current-line (ret)
+      "Set 'default-directory' to dirname of entity under point.
+
+    Useful when using dired-subtree."
+      (ignore ret)
+      (ignore-errors
+        (setq-local default-directory
+                    (file-name-directory (dired-get-file-for-visit)))))
+
+    (advice-add 'dired-previous-line :after #'gk-dired-update-default-directory-from-current-line)
+    (advice-add 'dired-next-line :after #'gk-dired-update-default-directory-from-current-line)
+  #+END_SRC
+
 * IDO
   #+NAME: ido-config
   #+BEGIN_SRC emacs-lisp
@@ -343,6 +362,7 @@
   #+BEGIN_SRC emacs-lisp :tangle ~/.emacs :comments org :noweb yes
     <<minimal-config>>
     <<dired-config>>
+    <<dired-config-subs>>
     <<ido-config>>
     <<ibuffer-config>>
     <<functions-definitions>>

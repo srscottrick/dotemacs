@@ -1,6 +1,8 @@
+#+PROPERTY: header-args :tangle C:/gohome/dev/tmp/EMACS.el :comments org
+*** TODO Table of Contents                                              :TOC:
 *** Basic Set up
     :PROPERTIES:
-    :header-args: :noweb-ref strategy-one
+    :COMMENT_header-args: :noweb-ref strategy-one :comments org
     :END:
 **** Backups
      :PROPERTIES:
@@ -40,10 +42,10 @@
 
       #+BEGIN_SRC emacs-lisp
         (setq visible-bell nil)
-        (setq ring-bell-function 'dotemacs--flash-mode-line)
         (defun dotemacs--flash-mode-line ()
           (invert-face 'mode-line)
           (run-with-timer 0.1 nil #'invert-face 'mode-line))
+        (setq ring-bell-function 'dotemacs--flash-mode-line)
       #+END_SRC
 ***** Confirm To Kill Emacs
       [[help:confirm-kill-emacs][confirm-kill-emacs]]
@@ -53,7 +55,7 @@
 ***** No bars
       [[help:menu-bar-mode][menu-bar-mode]]
       [[help:tool-bar-mode][tool-bar-mode]]
-      [[scroll-bar-mode][scroll-bar-mode]]
+      [[help:scroll-bar-mode][scroll-bar-mode]]
       #+BEGIN_SRC emacs-lisp
         (when (fboundp 'menu-bar-mode) (menu-bar-mode -1))
         (when (fboundp 'tool-bar-mode) (tool-bar-mode -1))
